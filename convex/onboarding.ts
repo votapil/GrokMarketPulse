@@ -1,7 +1,8 @@
 import { v } from "convex/values";
 import type { Id } from "./_generated/dataModel";
-import { action, env, internalMutation } from "./_generated/server";
+import { action, env, internalMutation, mutation } from "./_generated/server";
 import { internal } from "./_generated/api";
+import { companyContext } from "./seedData";
 import { vCompanyContext } from "./schema";
 import {
   callGrok,
@@ -221,6 +222,41 @@ export const saveCompanyContext = internalMutation({
       contextStatus: "ready",
       error: null,
     });
+  },
+});
+
+/**
+ * Рецепт сброса демо: CompanyBar.Analyze может затереть Helpdesk Pro $45
+ * чужим сайтом без тарифов — тогда кадр 0:45 (правка цены) не из чего играть.
+ */
+export const restoreDemoContext = mutation({
+  args: {},
+  returns: v.id("companies"),
+  handler: async (ctx) => {
+    const workspace = await ctx.db
+      .query("workspaces")
+      .withIndex("by_slug", (q) => q.eq("slug", "demo"))
+      .unique();
+    if (!workspace) {
+      throw new Error("demo workspace missing — run seed.ensure");
+    }
+
+    const company = await ctx.db
+      .query("companies")
+      .withIndex("by_workspace", (q) => q.eq("workspaceId", workspace._id))
+      .first();
+    if (!company) {
+      throw new Error("demo company missing — run seed.ensure");
+    }
+
+    await ctx.db.patch("companies", company._id, {
+      name: "Helpdesk AI",
+      url: "https://helpdesk.ai",
+      context: companyContext,
+      contextStatus: "ready",
+      error: null,
+    });
+    return company._id;
   },
 });
 
