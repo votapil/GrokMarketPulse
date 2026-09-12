@@ -12,16 +12,16 @@
 
 | Артборд (канон) | Label на канвасе | `data-node-id` | Ready на канвасе | Скриншот MCP |
 |---|---|---|---|---|
-| `Block/SignalCard` | Block Signal Card | `deb` | **да** `280×109` (AcmeFlow · Price change · High · 2m ago) | **снят** — ready, left accent 3px, LED high |
-| `Block/DiffView` | Block Diff View | `dis` | **да** `720×239` (`Pro $49/mo → Pro $39/mo`, `−20%`, line diff) | **снят** — Fact-зона, display ~48px mono |
-| `Block/EvidenceCard` | Block Evidence Card | `yow` | **да** `480×164` (Firecrawl · URL · fragment · 91%) | **снят** — recessed well `#12161a` |
-| `Block/MetricCards` | Block Metric Cards | `gmt` | **да** `360×160` (Threat · Score · Confidence · Price Δ) | **снят** — grid 2×2 mini-panels |
-| `Block/RecommendationCards` | Block Recommendation Cards | `goi` | **да** `320×817` (3 cards · Generate outline) | **снят** — action panel stack |
-| `Panel/Chat` | Panel Chat | `aly` | **да** `320×432` (Fact / Evidence / AI analysis + composer) | **снят** — assessment stack |
+| `Block/SignalCard` | Block Signal Card | `top` | **да** `280×109` (AcmeFlow · Price change · High · 2m ago) | **снят** — ready, left accent 3px, LED high |
+| `Block/DiffView` | Block Diff View | `mun` | **да** `720×220` (`Pro $49/mo → Pro $39/mo`, `−20%`, line diff) | **снят** — Fact-зона, display ~48px mono |
+| `Block/EvidenceCard` | Block Evidence Card | `pts` | **да** `480×156` (Firecrawl · URL · fragment · 91%) | **снят** — recessed well `#12161a` |
+| `Block/MetricCards` | Block Metric Cards | `the` | **да** `360×160` (Threat · Score · Confidence · Price Δ) | **снят** — grid 2×2 mini-panels |
+| `Block/RecommendationCards` | Block Recommendation Cards | `oes` | **да** `320×817` (3 cards · Generate outline) | **снят** — action panel stack |
+| `Panel/Chat` | Panel Chat | `you` | **да** `320×427` (Fact / Evidence / AI analysis + composer) | **снят** — assessment stack |
 
-Геометрия ready-блоков: Signal `280×109` · Diff `720×239` · Evidence `480×164` · Metric `360×160` · Rec `320×817` · Chat `320×432`.
+Геометрия ready-блоков: Signal `280×109` · Diff `720×220` · Evidence `480×156` · Metric `360×160` · Rec `320×817` · Chat `320×427`.
 
-**Локальных PNG в репо нет** — Wonder MCP отдаёт кадр в чат, не файл. Для судьи/имплементации: открыть [GrokMarketPulse](https://app.wonder.so/votapil/files/01a09523-7468-73ca-9838-1f163930bf0d/branches/main/pages/01a09523-7469-7d1a-93cb-ca004af7f12e) → зум к `deb` / `dis` / `yow` / `gmt` / `goi` / `aly`, либо повторить `take_screenshot` с id из таблицы.
+**Локальных PNG в репо нет** — Wonder MCP отдаёт кадр в чат, не файл. Для судьи/имплементации: открыть [GrokMarketPulse](https://app.wonder.so/votapil/files/01a09523-7468-73ca-9838-1f163930bf0d/branches/main/pages/01a09523-7469-7d1a-93cb-ca004af7f12e) → зум к `top` / `mun` / `pts` / `the` / `oes` / `you`, либо повторить `take_screenshot` с id из таблицы.
 
 На каждом блоке в продукте нужны четыре состояния: `loading` · `empty` · `error` · `ready`. На канвасе — **ready** у всех шести; state-фреймы — в коде по таблице «Общие правила состояний».
 
@@ -134,7 +134,7 @@ Shell: feed `w-[280px]`, action panel `w-[320px]`, gap `space/2`–`space/4` (8�
 - Направление читается **без цвета**: стрелка `→` + знак `−` / `+`.
 - Под diff-ценой — построчный fragment diff (added `--palette/ok`, removed `--palette/accent`), не весь markdown.
 
-Пример ready (совпадает с канвасом `dis`): `Pro $49/mo` → `Pro $39/mo` · `−20%`.
+Пример ready (совпадает с канвасом `mun`): `Pro $49/mo` → `Pro $39/mo` · `−20%`.
 
 ---
 
@@ -153,7 +153,7 @@ Shell: feed `w-[280px]`, action panel `w-[320px]`, gap `space/2`–`space/4` (8�
 
 ## Block/SignalCard · T-09
 
-**Канвас:** `deb` · ready `280×109` сверен со скрином. **Ready:** competitor name (title 18px sans bold), signal type mono caption, severity LED + label, relative time mono muted, selected — left border 3px `color/accent`.
+**Канвас:** `top` · ready `280×109` сверен со скрином. **Ready:** competitor name (title 18px sans bold), signal type mono caption, severity LED + label, relative time mono muted, selected — left border 3px `color/accent`.
 
 | Состояние | Содержимое |
 |---|---|
@@ -188,7 +188,7 @@ Shell: feed `w-[280px]`, action panel `w-[320px]`, gap `space/2`–`space/4` (8�
 
 ## Block/DiffView · T-11
 
-**Канвас:** `dis` · ready `720×239` сверен со скрином. **Ready:** Fact-зона. Before → After 48px+ black mono — **largest on screen**.
+**Канвас:** `mun` · ready `720×220` сверен со скрином. **Ready:** Fact-зона. Before → After 48px+ black mono — **largest on screen**.
 
 | Состояние | Содержимое |
 |---|---|
@@ -229,7 +229,7 @@ Shell: feed `w-[280px]`, action panel `w-[320px]`, gap `space/2`–`space/4` (8�
 
 ## Block/EvidenceCard · T-11
 
-**Канвас:** `yow` · ready `480×164` сверен со скрином. **Ready:** Evidence-зона. Recessed well, URL, provider badge, timestamp, fragment, confidence.
+**Канвас:** `pts` · ready `480×156` сверен со скрином. **Ready:** Evidence-зона. Recessed well, URL, provider badge, timestamp, fragment, confidence.
 
 | Состояние | Содержимое |
 |---|---|
@@ -269,7 +269,7 @@ Shell: feed `w-[280px]`, action panel `w-[320px]`, gap `space/2`–`space/4` (8�
 
 ## Block/MetricCards · T-09
 
-**Канвас:** `gmt` · ready `360×160`. **Ready:** grid 2×2 mini-panels on `color/surface`. Threat uses severity LED rules.
+**Канвас:** `the` · ready `360×160`. **Ready:** grid 2×2 mini-panels on `color/surface`. Threat uses severity LED rules.
 
 | Метрика | Пример | Стиль |
 |---|---|---|
@@ -315,7 +315,7 @@ Shell: feed `w-[280px]`, action panel `w-[320px]`, gap `space/2`–`space/4` (8�
 
 ## Block/RecommendationCards · T-13
 
-**Канвас:** `goi` · ready `320×817`. **Ready:** три карточки в action panel. Title sans bold; meta mono; **Generate** — outline (единственная saturated CTA на Shell остаётся Run Scan).
+**Канвас:** `oes` · ready `320×817`. **Ready:** три карточки в action panel. Title sans bold; meta mono; **Generate** — outline (единственная saturated CTA на Shell остаётся Run Scan).
 
 | Состояние | Содержимое |
 |---|---|
@@ -355,7 +355,7 @@ Shell: feed `w-[280px]`, action panel `w-[320px]`, gap `space/2`–`space/4` (8�
 
 ## Panel/Chat · T-13
 
-**Канвас:** `aly` · ready `320×432`. **Ready:** правая панель 320px — assessment stack (Fact / Evidence / AI analysis) + optional chat thread below.
+**Канвас:** `you` · ready `320×427`. **Ready:** правая панель 320px — assessment stack (Fact / Evidence / AI analysis) + optional chat thread below.
 
 | Состояние | Содержимое |
 |---|---|
@@ -427,14 +427,14 @@ Label всегда `text-[var(--color-text)]`, never severity hex as body fill.
 
 | Задача | Компонент | Артборд | Канвас | Источник истины |
 |---|---|---|---|---|
-| T-09 | `SignalCard` | Block/SignalCard | `deb` ready `280×109` | сниппет + скрин MCP |
-| T-09 | `MetricCards` | Block/MetricCards | `gmt` ready `360×160` | сниппет + скрин MCP |
-| T-11 | `DiffView` | Block/DiffView | `dis` ready `720×239` | сниппет + скрин MCP |
-| T-11 | `EvidenceCard` | Block/EvidenceCard | `yow` ready `480×164` | сниппет + скрин MCP |
-| T-13 | `RecommendationCards` | Block/RecommendationCards | `goi` ready `320×817` | сниппет + скрин MCP |
-| T-13 | `ActionPanel` / Chat | Panel/Chat | `aly` ready `320×432` | сниппет + скрин MCP |
+| T-09 | `SignalCard` | Block/SignalCard | `top` ready `280×109` | сниппет + скрин MCP |
+| T-09 | `MetricCards` | Block/MetricCards | `the` ready `360×160` | сниппет + скрин MCP |
+| T-11 | `DiffView` | Block/DiffView | `mun` ready `720×220` | сниппет + скрин MCP |
+| T-11 | `EvidenceCard` | Block/EvidenceCard | `pts` ready `480×156` | сниппет + скрин MCP |
+| T-13 | `RecommendationCards` | Block/RecommendationCards | `oes` ready `320×817` | сниппет + скрин MCP |
+| T-13 | `ActionPanel` / Chat | Panel/Chat | `you` ready `320×427` | сниппет + скрин MCP |
 
-React+Tailwind сниппеты выше — ready-state эталон с `cssVar` из DESIGN.md. Wonder `get_element_code` для `deb`/`dis`/`yow`/`gmt`/`goi`/`aly` совпадает по копирайту и hex; в продукте биндить токены, не копировать литералы с канваса.
+React+Tailwind сниппеты выше — ready-state эталон с `cssVar` из DESIGN.md. Wonder `get_element_code` для `top`/`mun`/`pts`/`the`/`oes`/`you` совпадает по копирайту и hex; в продукте биндить токены, не копировать литералы с канваса.
 
 ### Чеклист имплементации (T-09 / T-11 / T-13)
 
