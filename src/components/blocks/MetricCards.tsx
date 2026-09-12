@@ -1,5 +1,4 @@
 import type { ReactNode } from "react";
-import type { Level } from "@/lib/types";
 import type { BlockComponentProps } from "./registry";
 import {
   BlockEmpty,
@@ -16,13 +15,17 @@ function formatConfidence(confidence: number): string {
   return `${pct}%`;
 }
 
+function parsePrice(state: string): number | null {
+  const match = state.match(/\$([\d,]+(?:\.\d+)?)/);
+  if (!match) return null;
+  const value = Number(match[1].replace(/,/g, ""));
+  return Number.isFinite(value) ? value : null;
+}
+
 function priceDeltaPercent(previous: string, current: string): string | null {
-  const prev = previous.match(/\$(\d+)/);
-  const curr = current.match(/\$(\d+)/);
-  if (!prev || !curr) return null;
-  const before = Number(prev[1]);
-  const after = Number(curr[1]);
-  if (before === 0) return null;
+  const before = parsePrice(previous);
+  const after = parsePrice(current);
+  if (before == null || after == null || before === 0) return null;
   const pct = Math.round(((after - before) / before) * 100);
   if (pct === 0) return "0%";
   const sign = pct > 0 ? "+" : "−";

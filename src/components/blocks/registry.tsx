@@ -21,7 +21,7 @@ export type SignalSnapshot = {
   summary: string;
   previousState: string;
   currentState: string;
-  kind: "threat" | "opportunity" | string;
+  kind: "threat" | "opportunity" | "neutral";
   severity: Level;
   urgency: Level;
   score: number;
@@ -53,7 +53,22 @@ export function useSignalData(signalId: string | undefined): LoadState<SignalSna
 
   if (isFixture) {
     if (signalId === fixtureSignal.id) {
-      return { kind: "ready", data: fixtureSignal as SignalSnapshot };
+      const data: SignalSnapshot = {
+        id: fixtureSignal.id,
+        type: fixtureSignal.type,
+        title: fixtureSignal.title,
+        summary: fixtureSignal.summary,
+        previousState: fixtureSignal.previousState,
+        currentState: fixtureSignal.currentState,
+        kind: fixtureSignal.kind,
+        severity: fixtureSignal.severity,
+        urgency: fixtureSignal.urgency,
+        score: fixtureSignal.score,
+        confidence: fixtureSignal.confidence,
+        status: fixtureSignal.status,
+        error: fixtureSignal.error,
+      };
+      return { kind: "ready", data };
     }
     return { kind: "error", message: `Fixture signal "${signalId}" not found` };
   }

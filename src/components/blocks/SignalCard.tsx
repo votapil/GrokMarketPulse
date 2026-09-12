@@ -43,7 +43,10 @@ export function SignalCard({ block }: BlockComponentProps) {
           <h2 className="font-[family-name:var(--font-sans)] text-[18px] font-[number:var(--weight-bold,700)] leading-snug text-[var(--color-text,#e8eef2)]">
             {signal.title}
           </h2>
-          <SeverityLed level={signal.severity} label={signal.severity} />
+          <SeverityLed
+            level={signal.severity}
+            label={`Severity ${signal.severity}`}
+          />
         </div>
 
         <p className="font-[family-name:var(--font-mono)] text-[12px] uppercase tracking-wide text-[var(--color-text-muted,#a8b2c1)]">
