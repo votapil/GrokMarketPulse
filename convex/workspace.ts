@@ -2,6 +2,8 @@ import { v } from "convex/values";
 import { query } from "./_generated/server";
 import schema from "./schema";
 
+/** Read-only demo snapshot. First open seeds via `api.seed.ensure` (PulseScreen). */
+
 export const demo = query({
   args: {},
   returns: v.union(

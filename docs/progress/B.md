@@ -11,7 +11,7 @@
 | T-05 | готово | `6ed03cc` + mount | `/` → `PulseScreen` (импорт A); `/artifact/:id`; `/sources` |
 | T-06 | готово | `f65f536` | GET /mock/acmeflow/pricing + flip/state, URL из CONVEX_SITE_URL |
 | T-08 | готово | `a2f6219` | Firecrawl scrape → snapshots, hash-дедуп, 402/timeout/empty |
-| T-10 | в работе | — | seed.ensure: slug demo, URL из CONVEX_SITE_URL, live baseline / fixture |
+| T-10 | готово | push | seed.ensure: slug demo, URL из CONVEX_SITE_URL, live baseline / fixture Slack |
 | T-04 | в работе | — | render.yaml + DEPLOY.md |
 | T-17 | в работе | — | ArtifactScreen + Battlecard + OfferCard |
 | T-19 | в работе | — | LandingPreview + ArtifactBody |
