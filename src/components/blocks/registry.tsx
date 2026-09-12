@@ -14,7 +14,7 @@ import { FeatureMatrix } from "./FeatureMatrix";
 import { SourceListBlock } from "./SourceList";
 import { TimelineBlock } from "./Timeline";
 import { PriceChartBlock } from "./PriceChart";
-import { CompetitorScopeBlock } from "./CompetitorScope";
+import { GeoMapBlock } from "./GeoMap";
 
 export type BlockComponentProps = {
   block: UiBlock;
@@ -327,8 +327,9 @@ export const blockRegistry: Record<BlockType, BlockComponent> = {
   FeatureMatrix: FeatureMatrixBlock,
   ActionPreview,
   DataGrid: DataGridBlock,
-  // T-40: слот GeoMap несёт список конкурентов в радиусе; карта поверх него — T-36.
-  GeoMap: CompetitorScopeBlock,
+  // T-36: слот GeoMap несёт схематичную карту радиуса; список кандидатов (T-40,
+  // CompetitorScope) остаётся источником фикстур и контракта update_radius.
+  GeoMap: GeoMapBlock,
 };
 
 export { BlockShell };
