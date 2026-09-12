@@ -1,0 +1,26 @@
+# secrets
+.env
+.env.*
+!.env.example
+
+# deps / build
+node_modules/
+dist/
+build/
+.next/
+out/
+
+# convex
+.convex/
+
+# misc
+.DS_Store
+*.log
+
+# agent/MCP configs — these accrete live API keys (see docs/STACK.md: Render
+# embeds "Authorization: Bearer <RENDER_API_KEY>" inline). Repo is PUBLIC.
+.claude/settings.local.json
+.cursor/mcp.json
+.mcp.json
+*.pem
+*.key

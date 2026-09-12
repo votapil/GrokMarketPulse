@@ -1,0 +1,12 @@
+{
+  "enabledPlugins": {
+    "ecc@ecc": true,
+    "superpowers@claude-plugins-official": true,
+    "context7@claude-plugins-official": true,
+    "superpowers@superpowers-marketplace": false
+  },
+  "env": {
+    "ECC_HOOK_PROFILE": "minimal",
+    "ECC_GATEGUARD": "off"
+  }
+}
