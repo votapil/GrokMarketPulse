@@ -8,18 +8,19 @@
 | Задача | Статус | Коммит | Комментарий |
 |--------|--------|--------|-------------|
 | T-03 | готово | `660c82f` | канвас + токены зафиксированы в `docs/DESIGN.md` |
-| T-05 | готово | `6ed03cc` / `19b1d07` | `/` → `PulseScreen`; `/artifact/:id`; `/sources` |
+| T-05 | готово | `6ed03cc` / `f6f42c3` | `/` → `PulseScreen`; `/artifact/:id`; `/sources` |
 | T-06 | готово | `f65f536` | GET /mock/acmeflow/pricing + flip/state, URL из CONVEX_SITE_URL |
 | T-08 | готово | `a2f6219` | Firecrawl scrape → snapshots, hash-дедуп, 402/timeout/empty |
-| T-10 | готово | `6a8e4b5` | seed.ensure: slug demo, URL из CONVEX_SITE_URL, live baseline / fixture Slack |
-| T-04 | готово | `09b5ddf` | static site blueprint; CONVEX_DEPLOY_KEY sync:false; URL после Render |
-| T-17 | готово | `8f3fb06` | ArtifactScreen: battlecard/offer, trail, Copy, pending/error/empty |
-| T-19 | готово | `49c39fc` | ArtifactBody единая точка рендера; landing из JSON, Us vs AcmeFlow |
+| T-10 | готово | `1c62f2c` | seed.ensure: slug demo, URL из CONVEX_SITE_URL, live baseline / fixture Slack |
+| T-04 | готово | `03b7f34` | static site blueprint; CONVEX_DEPLOY_KEY sync:false; URL после Render |
+| T-17 | готово | `3c48b82` | ArtifactScreen: battlecard/offer, trail, Copy, pending/error/empty |
+| T-19 | готово | `7dd6731` | ArtifactBody единая точка рендера; landing из JSON, Us vs AcmeFlow |
 
 ## Приёмка
 
 - T-02 принято
 - T-09 / T-11 / T-07 / T-13 — приняты по сборке: `npm run build` зелёный после rebase на `6fae8ca`
+- T-14 принято (`4c1ad1a`) — snapshot-контракт B цел; замечания A (public `purgeBySource`, leftover `$`, concurrent insert) не блок
 - T-15 App `/` принято (`8f8461f`) — A сама повесила `PulseScreen`
 - T-15 `PulseScreen` возврат: двойные `<aside>` вокруг `SignalsFeed` и `ActionPanel` (заголовки + ширина/скролл) — правит A
 
