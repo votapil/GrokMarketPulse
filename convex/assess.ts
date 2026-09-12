@@ -520,6 +520,11 @@ export const run = action({
         status,
       });
 
+      // Холст под сигнал собирает Grok — но только после оценки: состав блоков
+      // зависит от assessment. Отдельным заданием, чтобы не удлинять этот вызов
+      // и чтобы падение layout не откатывало уже записанную оценку.
+      await ctx.scheduler.runAfter(0, internal.layout.build, { signalId });
+
       return {
         signalId,
         status,
