@@ -302,7 +302,10 @@ export const markError = internalMutation({
   handler: async (ctx, { signalId, error }) => {
     const signal = await ctx.db.get("signals", signalId);
     if (!signal) return null;
-    await ctx.db.patch("signals", signalId, { error });
+    await ctx.db.patch("signals", signalId, {
+      status: "error" as const,
+      error,
+    });
     return null;
   },
 });
@@ -340,60 +343,71 @@ export const run = action({
         reasoningEffort: "low",
       });
 
-    let result = await ask();
-    await ctx.runMutation(internal.costs.log, {
-      workspaceId: bundle.workspaceId,
-      provider: "xai",
-      op: "recommend.run",
-      costUsd: ticksToUsd(result.costUsdTicks),
-      credits: 0,
-    });
-
-    let parsed = parseJsonWithRetry(result.text, validateRecommendations);
-    if (!parsed.ok) {
-      result = await ask();
+    try {
+      let result = await ask();
       await ctx.runMutation(internal.costs.log, {
         workspaceId: bundle.workspaceId,
         provider: "xai",
-        op: "recommend.run.retry",
+        op: "recommend.run",
         costUsd: ticksToUsd(result.costUsdTicks),
         credits: 0,
       });
-      parsed = parseJsonWithRetry(result.text, validateRecommendations);
-    }
 
-    if (!parsed.ok) {
-      const message = `Invalid recommendations JSON after retry: ${parsed.error}`;
-      await ctx.runMutation(internal.recommend.markError, {
+      let parsed = parseJsonWithRetry(result.text, validateRecommendations);
+      if (!parsed.ok) {
+        result = await ask();
+        await ctx.runMutation(internal.costs.log, {
+          workspaceId: bundle.workspaceId,
+          provider: "xai",
+          op: "recommend.run.retry",
+          costUsd: ticksToUsd(result.costUsdTicks),
+          credits: 0,
+        });
+        parsed = parseJsonWithRetry(result.text, validateRecommendations);
+      }
+
+      if (!parsed.ok) {
+        const message = `Invalid recommendations JSON after retry: ${parsed.error}`;
+        await ctx.runMutation(internal.recommend.markError, {
+          signalId,
+          error: message,
+        });
+        throw new Error(message);
+      }
+
+      const recommendations = normalizeRecommendations(
+        parsed.value.recommendations,
+      );
+
+      // Final invariant check after normalize
+      if (
+        recommendations.length !== 3 ||
+        recommendations[2]?.artifactType !== "landing" ||
+        new Set(recommendations.map((r) => r.priority)).size !== 3
+      ) {
+        const message = "Normalized recommendations failed invariants";
+        await ctx.runMutation(internal.recommend.markError, {
+          signalId,
+          error: message,
+        });
+        throw new Error(message);
+      }
+
+      await ctx.runMutation(internal.recommend.saveRecommendations, {
         signalId,
-        error: message,
+        recommendations,
       });
-      throw new Error(message);
+
+      return { recommendations };
+    } catch (err) {
+      const message = err instanceof Error ? err.message : "Recommend failed";
+      if (!message.startsWith("Invalid recommendations") && !message.startsWith("Normalized recommendations")) {
+        await ctx.runMutation(internal.recommend.markError, {
+          signalId,
+          error: message,
+        });
+      }
+      throw err instanceof Error ? err : new Error(message);
     }
-
-    const recommendations = normalizeRecommendations(
-      parsed.value.recommendations,
-    );
-
-    // Final invariant check after normalize
-    if (
-      recommendations.length !== 3 ||
-      recommendations[2]?.artifactType !== "landing" ||
-      new Set(recommendations.map((r) => r.priority)).size !== 3
-    ) {
-      const message = "Normalized recommendations failed invariants";
-      await ctx.runMutation(internal.recommend.markError, {
-        signalId,
-        error: message,
-      });
-      throw new Error(message);
-    }
-
-    await ctx.runMutation(internal.recommend.saveRecommendations, {
-      signalId,
-      recommendations,
-    });
-
-    return { recommendations };
   },
 });
