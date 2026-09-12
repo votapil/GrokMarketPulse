@@ -3,6 +3,8 @@
  * Never log the API key. Never dump raw scrapes past the truncate limit.
  */
 
+import { env } from "./_generated/server";
+
 const XAI_RESPONSES_URL = "https://api.x.ai/v1/responses";
 
 /** Default text model (1M context, cheaper than 4.6). */
@@ -82,7 +84,7 @@ function readCostTicks(payload: unknown): number {
  * Text from output[] where type === "message" → content[0].text.
  */
 export async function callGrok(args: CallGrokArgs): Promise<CallGrokResult> {
-  const apiKey = process.env.XAI_API_KEY;
+  const apiKey = (env as Record<string, string | undefined>).XAI_API_KEY;
   if (!apiKey) {
     throw new Error("XAI_API_KEY is not set on the Convex deployment");
   }
