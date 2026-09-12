@@ -428,7 +428,7 @@ function SourceCaption({
 
 /** FeatureMatrix — «мы vs они»: строки features/limits, колонки Us / конкурент. */
 export function FeatureMatrix({ signalId, competitorId }: FeatureMatrixProps) {
-  const company = useCompanyPricing();
+  const company = useCompanyPricing({ allowEmptyPlans: true });
   const competitor = useCompetitorPricing(signalId, competitorId);
 
   if (company.kind === "loading" || competitor.kind === "loading") {

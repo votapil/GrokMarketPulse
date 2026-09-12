@@ -4,18 +4,16 @@ import { RefreshCw } from "lucide-react";
 
 import { api } from "../../../convex/_generated/api";
 import { fixtureWorkspace } from "@/lib/fixtures";
+import {
+  resolveCompanyPricing,
+  type CompanyPricing,
+  type PricingPlan,
+} from "@/lib/companyPricing";
 import type { LoadState } from "@/lib/types";
 import { cn } from "@/lib/utils";
 import { BlockEmpty, BlockLoading, BlockShell } from "./registry";
 
-/** Тариф в форме `vPlan` из convex/schema.ts (companies.context.plans). */
-export type PricingPlan = {
-  name: string;
-  usd: number | null;
-  period: string;
-  limits: string;
-  features: string[];
-};
+export type { CompanyPricing, PricingPlan };
 
 type PlanLike = {
   name: string;
@@ -25,13 +23,6 @@ type PlanLike = {
   features: readonly string[];
 };
 
-export type CompanyPricing = {
-  companyName: string;
-  plans: PricingPlan[];
-  keyFeatures: string[];
-  /** false → данные из фикстур (Convex ещё не засеян), показываем честный бейдж. */
-  fromConvex: boolean;
-};
 
 /**
  * Невидимое UI-событие: правка блока пользователем возвращается в модель.
@@ -92,7 +83,9 @@ export function parsePriceInput(raw: string): number | null {
 }
 
 /** Читает прайсинг своей компании: Convex → фикстуры, четыре состояния. */
-export function useCompanyPricing(): LoadState<CompanyPricing> {
+export function useCompanyPricing(
+  options: { allowEmptyPlans?: boolean } = {},
+): LoadState<CompanyPricing> {
   const demo = useQuery(api.workspace.demo);
 
   if (demo === undefined) {
@@ -101,43 +94,41 @@ export function useCompanyPricing(): LoadState<CompanyPricing> {
 
   if (demo === null) {
     const context = fixtureWorkspace.company.context;
-    return {
-      kind: "ready",
-      data: {
-        companyName: fixtureWorkspace.company.name,
+    return resolveCompanyPricing({
+      kind: "fixture",
+      companyName: fixtureWorkspace.company.name,
+      contextStatus: "ready",
+      error: null,
+      context: {
         plans: context.plans.map(toPricingPlan),
-        keyFeatures: [...context.keyFeatures],
-        fromConvex: false,
+        keyFeatures: context.keyFeatures,
       },
-    };
+    });
   }
 
   const { company } = demo;
+  const resolved = resolveCompanyPricing({
+    kind: "convex",
+    companyName: company.name,
+    contextStatus: company.contextStatus,
+    error: company.error,
+    context: company.context
+      ? {
+          plans: company.context.plans.map(toPricingPlan),
+          keyFeatures: company.context.keyFeatures,
+        }
+      : null,
+  });
 
-  if (company.contextStatus === "error") {
-    return {
-      kind: "error",
-      message: company.error ?? "Company context could not be analysed",
-    };
-  }
-
-  if (company.contextStatus === "pending") {
-    return { kind: "loading" };
-  }
-
-  if (!company.context || company.context.plans.length === 0) {
+  if (
+    !options.allowEmptyPlans &&
+    resolved.kind === "ready" &&
+    resolved.data.plans.length === 0
+  ) {
     return { kind: "empty" };
   }
 
-  return {
-    kind: "ready",
-    data: {
-      companyName: company.name,
-      plans: company.context.plans.map(toPricingPlan),
-      keyFeatures: [...company.context.keyFeatures],
-      fromConvex: true,
-    },
-  };
+  return resolved;
 }
 
 export type SortKey = "name" | "usd";

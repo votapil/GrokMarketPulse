@@ -1,6 +1,7 @@
 import { useQuery } from "convex/react";
 import { api } from "../../../convex/_generated/api";
 import { fixtureCompetitor, fixtureWorkspace } from "@/lib/fixtures";
+import { workspacePlanLabel, workspaceSegment } from "@/lib/workspaceView";
 
 export type DemoWorkspaceView = {
   companyName: string;
@@ -18,26 +19,25 @@ export function useDemoWorkspace() {
   }
 
   if (demo === null) {
-    const plan = fixtureWorkspace.company.context.plans[0];
+    const context = fixtureWorkspace.company.context;
     return {
       kind: "ready" as const,
       data: {
         companyName: fixtureWorkspace.company.name,
-        planLabel: plan ? `Pro $${plan.usd}` : "Pro $45",
-        segment: fixtureWorkspace.company.context.targetSegments[0] ?? "SMB",
+        planLabel: workspacePlanLabel(context.plans),
+        segment: workspaceSegment(context.targetSegments),
         competitorName: fixtureCompetitor.name,
         fromConvex: false,
       } satisfies DemoWorkspaceView,
     };
   }
 
-  const plan = demo.company.context?.plans.find((item) => item.name === "Pro");
   return {
     kind: "ready" as const,
     data: {
       companyName: demo.company.name,
-      planLabel: plan?.usd != null ? `Pro $${plan.usd}` : "Pro $45",
-      segment: demo.company.context?.targetSegments[0] ?? "SMB",
+      planLabel: workspacePlanLabel(demo.company.context?.plans ?? []),
+      segment: workspaceSegment(demo.company.context?.targetSegments),
       competitorName: demo.competitors[0]?.name ?? fixtureCompetitor.name,
       fromConvex: true,
     } satisfies DemoWorkspaceView,

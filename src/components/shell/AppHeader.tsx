@@ -1,6 +1,8 @@
 import { NavLink } from "react-router-dom";
-import { ScanLine } from "lucide-react";
 import type { DemoWorkspaceView } from "./useDemoWorkspace";
+import { useRunScan } from "./useRunScan";
+import { RunScanButton } from "@/components/RunScanButton";
+import { canStartScan } from "@/lib/scanUi";
 
 const NAV = [
   { to: "/setup", label: "Setup", end: true },
@@ -10,11 +12,12 @@ const NAV = [
 
 export function AppHeader({
   workspace,
-  onRunScan,
 }: {
   workspace: DemoWorkspaceView;
-  onRunScan?: () => void;
 }) {
+  const { competitorId, isScanning, startScan } = useRunScan();
+  const disabled = !canStartScan(competitorId, isScanning);
+
   return (
     <header className="flex h-[var(--size-header)] shrink-0 items-center gap-[var(--space-4)] border-b border-[var(--color-border)] bg-[var(--color-surface)] px-[var(--space-4)]">
       <p className="shrink-0 font-[family-name:var(--font-mono)] text-[13px] text-[var(--color-text)]">
@@ -36,15 +39,12 @@ export function AppHeader({
           </NavLink>
         ))}
       </nav>
-      <button
-        type="button"
-        disabled
-        onClick={onRunScan}
-        className="ml-auto inline-flex items-center gap-[var(--space-2)] rounded-[var(--radius-md)] bg-[var(--color-accent)] px-[var(--space-4)] py-[var(--space-2)] text-[18px] font-[number:var(--weight-bold)] text-white disabled:cursor-not-allowed"
-      >
-        <ScanLine aria-hidden="true" className="h-5 w-5" />
-        Run Scan
-      </button>
+      <RunScanButton
+        className="ml-auto"
+        disabled={disabled}
+        isScanning={isScanning}
+        onClick={startScan}
+      />
     </header>
   );
 }

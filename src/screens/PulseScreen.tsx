@@ -1,5 +1,5 @@
-import { useCallback, useEffect, useRef, useState } from "react";
-import { useAction, useQuery } from "convex/react";
+import { useEffect, useRef, useState } from "react";
+import { useAction } from "convex/react";
 import { api } from "../../convex/_generated/api";
 import type { Id } from "../../convex/_generated/dataModel";
 import { SignalsFeed } from "@/components/SignalsFeed";
@@ -11,6 +11,7 @@ import { CompanyBar } from "@/components/CompanyBar";
 import { RunScanButton } from "@/components/RunScanButton";
 import { ScanProgress } from "@/components/ScanProgress";
 import { UsageBadge } from "@/components/UsageBadge";
+import { useRunScan } from "@/components/shell/useRunScan";
 import {
   SELECT_SIGNAL_EVENT,
   type SelectSignalDetail,
@@ -23,15 +24,20 @@ import {
  * Run Scan + steps via api.scan.run / api.runs.latest.
  */
 export function PulseScreen() {
-  const demo = useQuery(api.workspace.demo);
   const ensureSeed = useAction(api.seed.ensure);
-  const runScan = useAction(api.scan.run);
+  const {
+    demo,
+    workspaceId,
+    competitorId,
+    latestRun,
+    isScanning,
+    startScan,
+    scanLaunchError,
+  } = useRunScan();
   const [selectedSignalId, setSelectedSignalId] = useState<Id<"signals"> | null>(
     null,
   );
   const [seedStarted, setSeedStarted] = useState(false);
-  const [scanPending, setScanPending] = useState(false);
-  const [scanLaunchError, setScanLaunchError] = useState<string | null>(null);
   const handledDoneRunIdRef = useRef<Id<"runs"> | null>(null);
 
   useEffect(() => {
@@ -44,19 +50,6 @@ export function PulseScreen() {
     });
   }, [demo, ensureSeed, seedStarted]);
 
-  const workspaceId = demo?.workspace._id;
-  const competitorId = demo?.competitors[0]?._id ?? null;
-
-  const anyLatestRun = useQuery(
-    api.runs.latest,
-    workspaceId !== undefined ? { workspaceId } : "skip",
-  );
-  // runs.latest отдаёт последний прогон любого вида. Прогресс, блокировка CTA и
-  // автовыбор сигнала — только по scan: artifact/verify показывают ход у себя,
-  // иначе незакрытый verify-run навсегда гасит Run Scan.
-  const latestRun = anyLatestRun?.kind === "scan" ? anyLatestRun : null;
-
-  const isScanning = scanPending || latestRun?.status === "running";
   const showScanProgress =
     latestRun != null &&
     (latestRun.status === "running" || latestRun.status === "error");
@@ -87,26 +80,6 @@ export function PulseScreen() {
     window.addEventListener(SELECT_SIGNAL_EVENT, onSelect);
     return () => window.removeEventListener(SELECT_SIGNAL_EVENT, onSelect);
   }, []);
-
-  const startScan = useCallback(() => {
-    if (competitorId == null || isScanning) {
-      return;
-    }
-    setScanLaunchError(null);
-    setScanPending(true);
-    void runScan({ competitorId })
-      .then(() => {
-        /* progress comes from api.runs.latest realtime */
-      })
-      .catch((error: unknown) => {
-        const message =
-          error instanceof Error ? error.message : "Scan failed to start";
-        setScanLaunchError(message);
-      })
-      .finally(() => {
-        setScanPending(false);
-      });
-  }, [competitorId, isScanning, runScan]);
 
   const statusHint =
     competitorId == null

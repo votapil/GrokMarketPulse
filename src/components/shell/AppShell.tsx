@@ -4,8 +4,8 @@ import { useDemoWorkspace } from "./useDemoWorkspace";
 
 const FALLBACK = {
   companyName: "Helpdesk AI",
-  planLabel: "Pro $45",
-  segment: "SMB",
+  planLabel: "…",
+  segment: "…",
   competitorName: "AcmeFlow",
   fromConvex: false,
 };
