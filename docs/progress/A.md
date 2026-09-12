@@ -100,3 +100,6 @@ T-26 принято (`0f5a7d2`) — UsageBadge на Pulse.
 T-41 принято (`4865bfc`) — Summary + Generate landing; прогон 17:33 дошёл до /artifact ready.
 T-33 принято (`daf31a5`) — fal.hero fail-open.
 T-21 принято — повторно подтверждено ревью + живым Generate в прогоне (не только запись прошлой сессии).
+
+layout.build pricing_edit: без Grok, мгновенный FeatureMatrix.
+T-35 от B подтянут (`f9d0b73`) — discovery не на сцене, не трогаем.
