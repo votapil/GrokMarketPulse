@@ -1,0 +1,16 @@
+services:
+  - type: web
+    name: grok-market-pulse
+    runtime: static
+    plan: free
+    branch: main
+    buildCommand: npx convex deploy --cmd 'npm run build'
+    staticPublishPath: ./dist
+    autoDeployTrigger: commit
+    envVars:
+      - key: CONVEX_DEPLOY_KEY
+        sync: false
+    routes:
+      - type: rewrite
+        source: /*
+        destination: /index.html
