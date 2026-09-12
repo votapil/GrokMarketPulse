@@ -82,7 +82,21 @@ T-21 принято — Generate rec_3 вживую открыл
 `/artifact/j97841kcjt206vrj7sdtq4e1zn8e8eby`, лендинг спорит с AcmeFlow $39
 против нашего Pro $45. PLAN.md не трогал.
 
-Репетиция §1 ×3: рецепт и таблица в `docs/DEMO.md`.
-T-23 / T-35 от B ещё нет — T-24 и T-40 не начинал.
+Репетиция §1 ×3: рецепт и таблица в `docs/DEMO.md`. Прогон после pin FeatureMatrix — CLEAN (Generate landing ок).
+
+T-24 готово — SourceList + Verify; empty только после finished verify (`f82d484`).
+T-28 готово — Timeline + PriceChart на `history.timeline`, подписи cut/raised (`40a3fd1`).
+T-40 готово — CompetitorScope на фикстурах, `update_radius` через uiEvents (`adb8510`).
+FeatureMatrix на `snapshots.latest` (`c653709`); UsageBadge смонтирован (`6276e31`).
+pin FeatureMatrix после edit_plan_price (`554c83f`).
 
 S-1 setupWatchlist принято.
+T-42 принято (`49a514d`) — `snapshots.latest` без markdown; FeatureMatrix на живых фичах.
+T-23 принято (`23cd98e`/`5563b51`) — verify.again + exa_source; пустой поиск законен. Exa иногда тянет Akiflow вместо AcmeFlow — не блок демо, confidence смотреть глазами.
+T-22a принято (`3a427cd`) — DemoToggle; MEDIUM: 14px white на accent (контраст) — не блок сцены.
+T-22b принято (`70f8456`) — setupWatchlist не затирает AcmeFlow.
+T-25 принято (`5aef18a`) — usage.summary страницами.
+T-26 принято (`0f5a7d2`) — UsageBadge на Pulse.
+T-41 принято (`4865bfc`) — Summary + Generate landing; прогон 17:33 дошёл до /artifact ready.
+T-33 принято (`daf31a5`) — fal.hero fail-open.
+T-21 принято — повторно подтверждено ревью + живым Generate в прогоне (не только запись прошлой сессии).

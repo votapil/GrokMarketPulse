@@ -63,3 +63,13 @@ npx convex run mock:flip '{"variant":"v2"}'
 ## T-21 вживую
 
 Generate на `rec_3` (landing) → `/artifact/j97841kcjt206vrj7sdtq4e1zn8e8eby`, страница спорит с AcmeFlow $39 vs наш Pro $45. Принято в `docs/progress/A.md`.
+
+
+## Известные ограничения (сцена)
+
+- SourceList на холсте появляется только если модель/layout выбрали блок; иначе Verify — через ActionPanel Retry / отдельный кадр.
+- Exa verify иногда возвращает чужие продукты (Akiflow vs AcmeFlow) — ведущий не опирается на чужие URL как на «доказательство».
+- Шапочный Run Scan disabled — живой CTA под CompanyBar.
+- На сцене **не** жать CompanyBar Analyze до финального кадра — переписывает demo-контекст.
+- `npm run dev` / `convex dev` watch на общем деплое — запрещены; только `npx convex dev --once`.
+- FeatureMatrix после правки цены закреплён сервером (`pinPricingEditBlocks`) — модель может не выбрать его сама.
