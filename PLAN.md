@@ -137,12 +137,18 @@ docs/START.md                                 ← с чего начинать, 
 | Render Web Service, Postgres, Key Value | Free web service спит 15 мин → холодный старт минуту. Состояние живёт в Convex |
 | `@convex-dev/agent`, `workflow`, `persistent-text-streaming`, `rag` | 45–90 минут на первый рабочий стрим. Один action + `internalMutation` + `useQuery` дают почти-стриминговый UX бесплатно |
 | AI Gateway (`@convex-dev/ai-sdk-provider`) | На Free выключен (`AiGatewayDisabled`). Только `fetch` из action |
-| Inline editing в DataGrid, редактируемый прайсинг | P2 из ТЗ, не в сценарии |
+| Артефакты (landing / battlecard / offer) в P0 | Минимальный процесс заканчивается сигналом, объяснением и тремя рекомендациями. Генерация страниц — волна 3, после того как петля «сигнал ↔ интерфейс» проходится вживую |
 | Рекламные креативы, email, автопубликация, автоизменение цен | Прямо исключено в ТЗ §18/§37 |
 | Юнит-тесты, e2e, CI | На один день дешевле `npm run build` + ручной клик-путь |
 | Мобильная вёрстка, тёмная/светлая тема тумблером | Демо на одном ноутбуке, одна тема |
-| GeoMap, Exa competitor discovery, Fal.ai | P2. Входят только после КТ-3, каждый — отдельная задача в хвосте |
+| Карта (`GeoMap`), Fal.ai | Волна 3. Конкуренты в районе показываются списком с контролом радиуса (`T-40`, волна 2) — карта даёт тот же смысл, но стоит часа возни с библиотекой |
 | Свободная генерация JSX от LLM | ТЗ §41: только реестр зарегистрированных блоков |
+
+**Что вернулось в план из этого списка.** Inline-правка прайсинга в `DataGrid` больше не исключение:
+правка своего тарифа — источник UI-события, без которого петля «блок → модель → новый layout» не
+показуема. Это кадр 0:45 сценария §1, задача `T-32`, волна 1. Exa discovery поднят из P2 в волну 2:
+без списка конкурентов в районе нет кадра 1:10. Онбординг остаётся запрещённым **как визард** —
+`T-39` добавляет одно предзаполненное поле на Pulse, не экран и не шаг.
 
 ---
 
@@ -492,37 +498,54 @@ export type LoadState<T> =
 | T-01 | общая (A делает, B ждёт) | Бутстрап: Convex + Vite + React + Tailwind + shadcn, env-ключи, `.mcp.json`, чистка мусора | — | всё сгенерированное: `package.json`, `vite.config.ts`, `tailwind.config.*`, `convex/*`, `src/*`, `.gitignore`, `README.md`, `.mcp.json`; удаляет `longp.json` | 30 | [x] |
 | T-02 | общая (A делает, B ждёт) | Замороженные контракты + заглушка на каждый модуль обеих дорожек | T-01 | `convex/schema.ts` + файл-заглушка каждого модуля из §5, `src/lib/types.ts`, `src/lib/fixtures.ts`, `src/components/artifacts/ArtifactBody.tsx` | 55 | [x] |
 | T-03 | B (идёт параллельно T-01/T-02, файлов репо не трогает) | Wonder: общий файл-канвас, токены, артборды Shell / Artifact / Sources / Landing → `docs/DESIGN.md` | — | `docs/DESIGN.md` | 60 | [x] |
+| T-38 | общая | **Разблокировка:** один общий dev-деплоймент Convex на двоих + три ключа в нём | T-01 | — (инфраструктура) | 15 | [x] |
 
-### Волна 1 — P0, полная параллельность
+`T-38` добавлен после ревизии и сразу закрыт: у A и B были разные деплойменты и у B ни одного
+ключа, поэтому интерфейс A и данные B ни разу не запускались вместе. Теперь обе дорожки на
+`dev:pleasant-bandicoot-600`, ключи стоят там же, ротация только через A.
 
-Порядок внутри дорожки — сверху вниз. Пары в одной строке идут одновременно.
+### Волна 1 — P0: «петля сигнал ↔ интерфейс работает вживую»
+
+**Цель волны:** проходится отрезок 0:00–1:00 сценария §1 — скан находит изменение, Grok собирает
+холст под сигнал, правка блока уходит в модель и перекладывает холст. Порядок внутри дорожки —
+сверху вниз. Пары в одной строке идут одновременно.
+
+Волна пересобрана после ревизии: артефакты (`T-17`, `T-19`, `T-21`) уехали в волну 3, а динамический
+слой (`T-27`, `T-29`, `T-30`, `T-32`) поднят сюда из волны 2. Причина — без него демо показывает
+пайплайн без продукта, а обе половины задумки держатся именно на петле.
 
 | ID | Дорожка | Задача | Зависит от | Владеет файлами | ~мин | ✔ |
 |----|---------|--------|-----------|-----------------|------|---|
-| T-12 | A | Grok-клиент (`/v1/responses`) + Company Context | T-02 | `convex/grok.ts`, `convex/prompts/reasoning.ts`, `convex/onboarding.ts` | 40 | [ ] |
-| T-37 | A | Wonder: артборды блоков Pulse (SignalCard, DiffView, EvidenceCard, MetricCards, RecommendationCards, ChatPanel) → `docs/DESIGN-BLOCKS.md` | T-03 | `docs/DESIGN-BLOCKS.md` | 35 | [ ] |
-| T-05 | B | App shell: 3-панельный layout, роуты, токены, примитивы состояний | T-02, T-03 | `src/App.tsx`, `src/main.tsx`, `src/index.css`, `tailwind.config.*`, `index.html`, `src/components/shell/**`, `src/components/state/**` | 40 | [ ] |
-| T-09 | A | Реестр блоков + `BlockRenderer` + `SignalCard` + `MetricCards` + обёртка `ActionPreview` | T-05 | `src/components/blocks/registry.tsx`, `src/components/blocks/BlockRenderer.tsx`, `src/components/blocks/SignalCard.tsx`, `src/components/blocks/MetricCards.tsx`, `src/components/blocks/ActionPreview.tsx` | 45 | [ ] |
-| T-06 | B | Мок-сайт конкурента: Convex HTTP action + `mock.flip` | T-02 | `convex/http.ts`, `convex/mock.ts`, `convex/mockHtml.ts` | 35 | [ ] |
-| T-11 | A | `DiffView` + `EvidenceCard` — Fact и Evidence разделены | T-09 | `src/components/blocks/DiffView.tsx`, `src/components/blocks/EvidenceCard.tsx` | 40 | [ ] |
-| T-08 | B | Firecrawl: scrape → snapshot, кэш, дедуп, обработка ошибок | T-06 | `convex/firecrawl.ts`, `convex/snapshots.ts` | 40 | [ ] |
-| T-07 | A | `SignalsFeed` — левая колонка на `useQuery` | T-09 | `src/components/SignalsFeed.tsx`, `src/components/SignalRow.tsx` | 35 | [ ] |
-| T-10 | B | Seed demo-воркспейса + baseline (идемпотентно) | T-08 | `convex/seed.ts`, `convex/seedData.ts`, `convex/workspace.ts` | 35 | [ ] |
-| T-13 | A | Панель объяснения: Assessment (Fact/Evidence/Analysis) + `RecommendationCards` | T-09 | `src/components/ActionPanel.tsx`, `src/components/blocks/RecommendationCards.tsx` | 40 | [ ] |
-| T-04 | B | Деплой на Render: static site + autodeploy + прод Convex | T-05 | `render.yaml`, `docs/DEPLOY.md`, `.env.local.example` | 30 | [ ] |
-| T-14 | A | Detect: структурный diff + Grok-фильтр шума → Signal | T-08, T-12 | `convex/detect.ts`, `convex/diff.ts`, `convex/signals.ts` | 45 | [ ] |
-| T-17 | B | Экран Artifact: shell + рендер `battlecard` и `offer` | T-05 | `src/screens/ArtifactScreen.tsx`, `src/components/artifacts/Battlecard.tsx`, `src/components/artifacts/OfferCard.tsx` | 40 | [ ] |
-| T-15 | A | Экран Pulse: Run Scan, пошаговый прогресс, realtime-вставка сигнала | T-07, T-13 | `src/screens/PulseScreen.tsx`, `src/components/RunScanButton.tsx`, `src/components/ScanProgress.tsx` | 40 | [ ] |
-| T-19 | B | Landing page preview из JSON-схемы + `ArtifactBody` | T-17 | `src/components/artifacts/LandingPreview.tsx`, `src/components/artifacts/ArtifactBody.tsx` | 45 | [ ] |
-| T-18 | A | Assess: threat/opportunity, severity, score, confidence, urgency + объяснение | T-14 | `convex/assess.ts` | 40 | [ ] |
-| T-16 | B | Оркестратор `scan.run` + таблица `runs` | T-08, T-14 | `convex/scan.ts`, `convex/runs.ts` | 40 | [ ] |
-| T-20 | A | Recommend: три контрмеры с rationale / impact / effort / risk | T-18 | `convex/recommend.ts` | 35 | [ ] |
-| T-21 | B | Act: правила генерации + создание артефакта | T-20 | `convex/act.ts`, `convex/prompts/artifacts.ts`, `convex/artifacts.ts` | 45 | [ ] |
-| T-22 | B | Экран Sources: предзаполненный онбординг + тумблер `Simulate competitor edit` | T-05, T-10 | `src/screens/SourcesScreen.tsx`, `src/components/SourceRow.tsx`, `src/components/DemoToggle.tsx` | 35 | [ ] |
+| T-12 | A | Grok-клиент (`/v1/responses`) + Company Context | T-02 | `convex/grok.ts`, `convex/prompts/reasoning.ts`, `convex/onboarding.ts` | 40 | [x] |
+| T-37 | A | Wonder: артборды блоков Pulse → `docs/DESIGN-BLOCKS.md` | T-03 | `docs/DESIGN-BLOCKS.md` | 35 | [x] |
+| T-05 | B | App shell: 3-панельный layout, роуты, токены, примитивы состояний | T-02, T-03 | `src/App.tsx`, `src/main.tsx`, `src/index.css`, `tailwind.config.*`, `index.html`, `src/components/shell/**`, `src/components/state/**` | 40 | [x] |
+| T-09 | A | Реестр блоков + `BlockRenderer` + `SignalCard` + `MetricCards` + обёртка `ActionPreview` | T-05 | `src/components/blocks/registry.tsx`, `src/components/blocks/BlockRenderer.tsx`, `src/components/blocks/SignalCard.tsx`, `src/components/blocks/MetricCards.tsx`, `src/components/blocks/ActionPreview.tsx` | 45 | [x] |
+| T-06 | B | Мок-сайт конкурента: Convex HTTP action + `mock.flip` | T-02 | `convex/http.ts`, `convex/mock.ts`, `convex/mockHtml.ts` | 35 | [x] |
+| T-11 | A | `DiffView` + `EvidenceCard` — Fact и Evidence разделены | T-09 | `src/components/blocks/DiffView.tsx`, `src/components/blocks/EvidenceCard.tsx` | 40 | [x] |
+| T-08 | B | Firecrawl: scrape → snapshot, кэш, дедуп, обработка ошибок | T-06 | `convex/firecrawl.ts`, `convex/snapshots.ts` | 40 | [x] |
+| T-07 | A | `SignalsFeed` — левая колонка на `useQuery` | T-09 | `src/components/SignalsFeed.tsx`, `src/components/SignalRow.tsx` | 35 | [x] |
+| T-10 | B | Seed demo-воркспейса + baseline (идемпотентно) | T-08 | `convex/seed.ts`, `convex/seedData.ts`, `convex/workspace.ts` | 35 | [x] |
+| T-13 | A | Панель объяснения: Assessment (Fact/Evidence/Analysis) + `RecommendationCards` | T-09 | `src/components/ActionPanel.tsx`, `src/components/blocks/RecommendationCards.tsx` | 40 | [x] |
+| T-04 | B | Деплой на Render: static site + autodeploy + прод Convex | T-05 | `render.yaml`, `docs/DEPLOY.md`, `.env.local.example` | 30 | [x] |
+| T-14 | A | Detect: структурный diff + Grok-фильтр шума → Signal | T-08, T-12 | `convex/detect.ts`, `convex/diff.ts`, `convex/signals.ts` | 45 | [x] |
+| T-15 | A | Экран Pulse: Run Scan, пошаговый прогресс, realtime-вставка сигнала | T-07, T-13 | `src/screens/PulseScreen.tsx`, `src/components/RunScanButton.tsx`, `src/components/ScanProgress.tsx` | 40 | [x] |
+| T-18 | A | Assess: threat/opportunity, severity, score, confidence, urgency + объяснение | T-14 | `convex/assess.ts` | 40 | [x] |
+| T-16 | B | Оркестратор `scan.run`: живая цепочка Firecrawl → diff → detect → assess, шаги в `runs` | T-08, T-14, T-38 | `convex/scan.ts`, `convex/runs.ts` | 45 | [x] |
+| T-20 | A | Recommend: три контрмеры с rationale / impact / effort / risk | T-18 | `convex/recommend.ts` | 35 | [x] |
+| **T-27** | **A** | **`layout.build`: Grok выбирает состав блоков → `signal.layout`** | T-18 | `convex/layout.ts` | 35 | [~] |
+| **T-29** | **A** | **`chat.ask` + `uiEvents.send`: петля блок → модель → новый layout** | T-27 | `convex/chat.ts`, `convex/uiEvents.ts`, `convex/history.ts` | 45 | [~] |
+| **T-30** | **A** | **Chat-панель: история, чипы-подсказки, скелетон, рендер блоков из ответа** | T-13, T-29 | `src/components/ChatPanel.tsx` | 40 | [~] |
+| **T-32** | **A** | **`DataGrid` с inline-правкой прайсинга + `FeatureMatrix`** | T-29 | `src/components/blocks/DataGrid.tsx`, `src/components/blocks/FeatureMatrix.tsx` | 45 | [~] |
+| **T-39** | **A** | **Точка входа «моя компания»: одно предзаполненное поле → `onboarding.analyze`** | T-12, T-38 | `src/components/CompanyBar.tsx` | 30 | [~] |
+| T-22 | B | Экран Sources: предзаполненный watchlist + тумблер `Simulate competitor edit` | T-05, T-10 | `src/screens/SourcesScreen.tsx`, `src/components/SourceRow.tsx`, `src/components/DemoToggle.tsx` | 35 | [~] |
 
-**После T-22 демо-сценарий §1 проходится целиком.** Всё дальше — усиление, не спасение.
+**После `T-32` отрезок 0:00–1:00 сценария §1 проходится целиком** — это КТ-2, минимум, ради которого
+делается проект. Всё дальше усиливает, но не спасает.
 
-Итог волны 1: дорожка A — 11 задач (~435 мин) плюс `T-01`+`T-02` (85). Дорожка B — 10 задач (~385 мин) плюс `T-03` (60). Разница ~35 минут в пользу B — она уходит на приёмку чужих задач по §7, которых у B больше.
+Остаток волны 1: у A пять задач динамического слоя (~195 мин), у B — `T-22`. Пайплайн B закрыт
+полностью и прогнан на репетиции: `mock:flip v2` → `scan:run` даёт ровно один сигнал `Pro 49 → 39`,
+повторный скан пишет `Already reported` без дубля. Артефакты (`T-17`, `T-19`) сделаны досрочно и
+числятся в волне 3.
 
 ### Волна 2 — P1: «конкуренты в районе, подтверждение, проактивность»
 
@@ -549,8 +572,8 @@ export type LoadState<T> =
 | ID | Дорожка | Задача | Зависит от | Владеет файлами | ~мин | ✔ |
 |----|---------|--------|-----------|-----------------|------|---|
 | T-21 | B | Act: правила генерации + создание артефакта | T-20 | `convex/act.ts`, `convex/prompts/artifacts.ts`, `convex/artifacts.ts` | 45 | [ ] |
-| T-17 | B | Экран Artifact: shell + рендер `battlecard` и `offer` | T-05, T-21 | `src/screens/ArtifactScreen.tsx`, `src/components/artifacts/Battlecard.tsx`, `src/components/artifacts/OfferCard.tsx` | 40 | [ ] |
-| T-19 | B | Landing page preview из JSON-схемы + `ArtifactBody` | T-17 | `src/components/artifacts/LandingPreview.tsx`, `src/components/artifacts/ArtifactBody.tsx` | 45 | [ ] |
+| T-17 | B | Экран Artifact: shell + рендер `battlecard` и `offer` | T-05, T-21 | `src/screens/ArtifactScreen.tsx`, `src/components/artifacts/Battlecard.tsx`, `src/components/artifacts/OfferCard.tsx` | 40 | [x] |
+| T-19 | B | Landing page preview из JSON-схемы + `ArtifactBody` | T-17 | `src/components/artifacts/LandingPreview.tsx`, `src/components/artifacts/ArtifactBody.tsx` | 45 | [x] |
 | T-36 | A | `GeoMap` поверх `CompetitorScope` + событие `update_radius` | T-40 | `src/components/blocks/GeoMap.tsx` | 45 | [ ] |
 | T-33 | B | Fal.ai: hero-картинка для landing page | T-21 | `convex/fal.ts` | 35 | [ ] |
 | T-34 | B | Hero-картинка в `LandingPreview` + регенерация и правка артефакта | T-19, T-33 | `src/components/artifacts/RegenerateBar.tsx` | 30 | [ ] |
