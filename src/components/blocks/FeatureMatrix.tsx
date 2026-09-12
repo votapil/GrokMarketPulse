@@ -1,7 +1,8 @@
 import { useQuery } from "convex/react";
 
 import { api } from "../../../convex/_generated/api";
-import { fixtureCompetitor, fixtureSnapshotV2 } from "@/lib/fixtures";
+import type { Id } from "../../../convex/_generated/dataModel";
+import { fixtureCompetitor, fixtureSignal, fixtureSnapshotV2 } from "@/lib/fixtures";
 import type { LoadState } from "@/lib/types";
 import { cn } from "@/lib/utils";
 import type { CompanyPricing, PricingPlan } from "./DataGrid";
@@ -12,18 +13,35 @@ import {
   useCompanyPricing,
 } from "./DataGrid";
 import { extractPrice, useSignalBundle } from "./DiffView";
-import { BlockEmpty, BlockLoading, BlockShell } from "./registry";
+import { BlockEmpty, BlockLoading, BlockShell, isFixtureId } from "./registry";
+
+/**
+ * Откуда данные конкурента. `snapshot` — живой `api.snapshots.latest`;
+ * `fixture` — только для fixture_-идентификаторов; `none` — снапшотов ещё нет
+ * (нормальное состояние до первого скана, не ошибка).
+ */
+export type CompetitorSource = "snapshot" | "fixture" | "none";
 
 export type CompetitorPricing = {
   competitorName: string;
+  /** Тариф из сигнала (Pro), иначе первый с ценой; `null` — нет снапшота или тарифов. */
   plan: PricingPlan | null;
+  /** Объединение фич снапшота и выбранного тарифа, без дублей. */
   features: string[];
-  /** Состав фич живого публичного запроса пока не имеет — помечаем источник честно. */
-  featuresFromCache: boolean;
+  source: CompetitorSource;
+  /** `fetchedAt` снапшота (или фикстуры); `null` — снапшота нет. */
+  fetchedAt: number | null;
+  /** Цена из `signal.currentState` — только сверка со снапшотом, не источник правды. */
+  signalPrice: number | null;
 };
 
 export type FeatureMatrixProps = {
   signalId?: string;
+  /**
+   * Явный конкурент (`block.props.competitorId`). Без него: для фикстурного
+   * сигнала — фикстурный конкурент, иначе первый конкурент демо-воркспейса.
+   */
+  competitorId?: string;
 };
 
 export type MatrixGroup = "Plan" | "Features";
@@ -34,23 +52,75 @@ export type MatrixRow = {
   us: string;
   them: string;
   differs: boolean;
+  /** Muted-подпись под значением конкурента (сверка цены снапшота с сигналом). */
+  note?: string;
 };
 
-function normalizeFeature(feature: string): string {
-  return feature.toLowerCase().replace(/[^a-z0-9]+/g, " ").trim();
+/** Ключ сравнения: нижний регистр, только буквы и цифры, одиночные пробелы. */
+function normalizeKey(text: string): string {
+  return text.toLowerCase().replace(/[^a-z0-9]+/g, " ").trim();
+}
+
+/** «Pro» ⊂ «Pro $39/mo» по целым словам: «Professional» на «Pro» не матчится. */
+function mentionsPlan(state: string, planName: string): boolean {
+  const needle = normalizeKey(planName);
+  return needle !== "" && ` ${normalizeKey(state)} `.includes(` ${needle} `);
+}
+
+/** Тариф из сигнала → иначе первый с ценой → иначе первый вообще. Копия, не ссылка. */
+function pickSnapshotPlan(
+  plans: readonly PricingPlan[],
+  currentState: string | null,
+): PricingPlan | null {
+  const named = currentState
+    ? plans.find((plan) => mentionsPlan(currentState, plan.name))
+    : undefined;
+  const chosen = named ?? plans.find((plan) => plan.usd !== null) ?? plans[0];
+  return chosen ? { ...chosen, features: [...chosen.features] } : null;
+}
+
+function unionFeatures(...lists: readonly (readonly string[])[]): string[] {
+  const seen = new Set<string>();
+  const result: string[] = [];
+  for (const list of lists) {
+    for (const feature of list) {
+      const key = normalizeKey(feature);
+      if (!key || seen.has(key)) {
+        continue;
+      }
+      seen.add(key);
+      result.push(feature);
+    }
+  }
+  return result;
 }
 
 /**
- * Конкурент: имя и цену берём из живого сигнала, когда он есть.
- * Состав фич — из кэшированного снапшота-фикстуры: публичного запроса к
- * `snapshots` в API нет (convex/snapshots.ts — только internal-функции).
- * TODO: перейти на `api.snapshots.latest`, когда дорожка B его опубликует.
+ * Конкурент: имя и цену из сигнала берём как сверку, состав тарифов и фич —
+ * из живого `api.snapshots.latest`. Фикстурный снапшот остаётся только для
+ * fixture_-идентификаторов; на живом пути `null` от запроса означает «снапшота
+ * ещё нет» и в фикстуру молча не проваливается.
  */
+// eslint-disable-next-line react-refresh/only-export-components
 export function useCompetitorPricing(
   signalId: string | undefined,
+  competitorId?: string,
 ): LoadState<CompetitorPricing> {
   const demo = useQuery(api.workspace.demo);
   const bundle = useSignalBundle(signalId);
+
+  const resolvedId =
+    competitorId ??
+    (signalId === fixtureSignal.id ? fixtureSignal.competitorId : undefined) ??
+    demo?.competitors[0]?._id;
+  const isFixture = resolvedId !== undefined && isFixtureId(resolvedId);
+
+  const snapshot = useQuery(
+    api.snapshots.latest,
+    resolvedId && !isFixture
+      ? { competitorId: resolvedId as Id<"competitors"> }
+      : "skip",
+  );
 
   if (demo === undefined || bundle.kind === "loading") {
     return { kind: "loading" };
@@ -60,34 +130,76 @@ export function useCompetitorPricing(
     return { kind: "error", message: bundle.message };
   }
 
-  const competitorName =
-    bundle.kind === "ready"
-      ? bundle.data.competitor.name
-      : (demo?.competitors[0]?.name ?? fixtureCompetitor.name);
+  const signalState =
+    bundle.kind === "ready" ? bundle.data.signal.currentState : null;
+  const signalPrice = signalState === null ? null : extractPrice(signalState);
 
-  const cachedPlan = fixtureSnapshotV2.plans[0];
-  const livePrice =
-    bundle.kind === "ready"
-      ? extractPrice(bundle.data.signal.currentState)
-      : null;
+  if (isFixture) {
+    if (resolvedId !== fixtureCompetitor.id) {
+      return {
+        kind: "error",
+        message: `Fixture competitor "${resolvedId}" not found`,
+      };
+    }
+    const cachedPlan = pickSnapshotPlan(fixtureSnapshotV2.plans, signalState);
+    return {
+      kind: "ready",
+      data: {
+        competitorName:
+          bundle.kind === "ready"
+            ? bundle.data.competitor.name
+            : fixtureCompetitor.name,
+        plan: cachedPlan,
+        features: unionFeatures(
+          fixtureSnapshotV2.features,
+          cachedPlan?.features ?? [],
+        ),
+        source: "fixture",
+        fetchedAt: fixtureSnapshotV2.fetchedAt,
+        signalPrice,
+      },
+    };
+  }
 
-  if (!cachedPlan) {
+  if (resolvedId === undefined) {
+    // Демо-воркспейс не засеян и конкурент не передан — сравнивать не с кем.
     return { kind: "empty" };
   }
 
+  if (snapshot === undefined) {
+    return { kind: "loading" };
+  }
+
+  const competitorName =
+    bundle.kind === "ready"
+      ? bundle.data.competitor.name
+      : (demo?.competitors.find((competitor) => competitor._id === resolvedId)
+          ?.name ?? "Competitor");
+
+  if (snapshot === null) {
+    return {
+      kind: "ready",
+      data: {
+        competitorName,
+        plan: null,
+        features: [],
+        source: "none",
+        fetchedAt: null,
+        signalPrice,
+      },
+    };
+  }
+
+  const plan = pickSnapshotPlan(snapshot.plans, signalState);
   return {
     kind: "ready",
     data: {
       competitorName,
-      plan: {
-        name: cachedPlan.name,
-        usd: livePrice ?? cachedPlan.usd,
-        period: cachedPlan.period,
-        limits: cachedPlan.limits,
-        features: [...cachedPlan.features],
-      },
-      features: [...fixtureSnapshotV2.features],
-      featuresFromCache: true,
+      plan,
+      features: unionFeatures(snapshot.features, plan?.features ?? []),
+      source: "snapshot",
+      fetchedAt: snapshot.fetchedAt,
+      signalPrice,
     },
   };
 }
@@ -100,6 +212,7 @@ function priceLabel(plan: PricingPlan | null): string {
 }
 
 /** Чистая сборка строк матрицы; входные данные не мутируются. */
+// eslint-disable-next-line react-refresh/only-export-components
 export function buildMatrixRows(
   us: CompanyPricing,
   them: CompetitorPricing,
@@ -107,10 +220,20 @@ export function buildMatrixRows(
   const ourPlan =
     us.plans.find((plan) => plan.name === them.plan?.name) ?? us.plans[0] ?? null;
 
+  // Неизвестно ≠ отличается: без снапшота (или без тарифа в нём) колонка
+  // конкурента — «—», и такие строки как различия не подсвечиваем.
+  const themUnknown = them.source === "none";
+  const planKnown = them.plan !== null;
+
   const usPrice = priceLabel(ourPlan);
   const themPrice = priceLabel(them.plan);
   const usLimits = ourPlan?.limits || "—";
   const themLimits = them.plan?.limits || "—";
+
+  const priceNote =
+    them.plan && them.signalPrice !== null && them.plan.usd !== them.signalPrice
+      ? `snapshot ${formatPrice(them.plan.usd)} · signal ${formatPrice(them.signalPrice)}`
+      : undefined;
 
   const rows: MatrixRow[] = [
     {
@@ -118,14 +241,15 @@ export function buildMatrixRows(
       label: `${ourPlan?.name ?? them.plan?.name ?? "Plan"} price`,
       us: usPrice,
       them: themPrice,
-      differs: usPrice !== themPrice,
+      differs: planKnown && usPrice !== themPrice,
+      note: priceNote,
     },
     {
       group: "Plan",
       label: "Limits",
       us: usLimits,
       them: themLimits,
-      differs: usLimits !== themLimits,
+      differs: planKnown && usLimits !== themLimits,
     },
   ];
 
@@ -134,7 +258,7 @@ export function buildMatrixRows(
   const theirKeys = new Set<string>();
 
   for (const feature of [...(ourPlan?.features ?? []), ...us.keyFeatures]) {
-    const key = normalizeFeature(feature);
+    const key = normalizeKey(feature);
     if (!key) {
       continue;
     }
@@ -145,7 +269,7 @@ export function buildMatrixRows(
   }
 
   for (const feature of [...them.features, ...(them.plan?.features ?? [])]) {
-    const key = normalizeFeature(feature);
+    const key = normalizeKey(feature);
     if (!key) {
       continue;
     }
@@ -162,8 +286,8 @@ export function buildMatrixRows(
       group: "Features" as const,
       label,
       us: inUs ? "Yes" : "No",
-      them: inThem ? "Yes" : "No",
-      differs: inUs !== inThem,
+      them: themUnknown ? "—" : inThem ? "Yes" : "No",
+      differs: !themUnknown && inUs !== inThem,
     };
   });
 
@@ -174,12 +298,38 @@ export function buildMatrixRows(
   return [...rows, ...shared, ...different];
 }
 
+/** «12 Sep, 17:05» — UTC, как у соседних блоков; полная дата уходит в title/dateTime. */
+function formatSnapshotAt(at: number): string {
+  const parts = new Intl.DateTimeFormat("en-US", {
+    day: "numeric",
+    month: "short",
+    hour: "2-digit",
+    minute: "2-digit",
+    hourCycle: "h23",
+    timeZone: "UTC",
+  }).formatToParts(new Date(at));
+  const part = (type: Intl.DateTimeFormatPartTypes) =>
+    parts.find((item) => item.type === type)?.value ?? "";
+  return `${part("day")} ${part("month")}, ${part("hour")}:${part("minute")}`;
+}
+
+function formatSnapshotAtFull(at: number): string {
+  const text = new Intl.DateTimeFormat("en-GB", {
+    dateStyle: "medium",
+    timeStyle: "short",
+    timeZone: "UTC",
+  }).format(new Date(at));
+  return `${text} UTC`;
+}
+
 const headCell =
   "border-b border-[var(--color-border)] px-[var(--space-3)] py-[var(--space-2)] text-left font-[family-name:var(--font-mono)] text-[11px] font-[number:var(--weight-medium)] uppercase tracking-wide text-[var(--color-text-muted)]";
 const bodyCell =
   "border-b border-[var(--color-border)] px-[var(--space-3)] py-[var(--space-2)] align-top font-[family-name:var(--font-mono)] text-[13px] text-[var(--color-text)]";
 const groupCell =
   "border-b border-[var(--color-border)] bg-[var(--palette-recessed)] px-[var(--space-3)] py-[var(--space-1)] text-left font-[family-name:var(--font-mono)] text-[11px] uppercase tracking-wide text-[var(--color-text-muted)]";
+const captionText =
+  "font-[family-name:var(--font-mono)] text-[11px] text-[var(--color-text-muted)]";
 
 function ValueCell({ value, differs }: { value: string; differs: boolean }) {
   return (
@@ -229,6 +379,9 @@ function MatrixSection({
           <td className={cn(bodyCell, "whitespace-nowrap")}>{row.us}</td>
           <td className={cn(bodyCell, "whitespace-nowrap")}>
             <ValueCell value={row.them} differs={row.differs} />
+            {row.note ? (
+              <p className={cn(captionText, "mt-[var(--space-1)]")}>{row.note}</p>
+            ) : null}
           </td>
         </tr>
       ))}
@@ -236,10 +389,47 @@ function MatrixSection({
   );
 }
 
+/** Подпись источника: фикстура — amber-плашка, снапшот — дата, ничего — призыв к скану. */
+function SourceCaption({
+  source,
+  fetchedAt,
+}: {
+  source: CompetitorSource;
+  fetchedAt: number | null;
+}) {
+  if (source === "fixture") {
+    return (
+      <span className="rounded-[var(--radius-sm)] border border-[var(--palette-amber)] px-[var(--space-2)] py-[var(--space-1)] font-[family-name:var(--font-mono)] text-[11px] uppercase text-[var(--palette-amber)]">
+        cached fixture
+      </span>
+    );
+  }
+
+  if (source === "none") {
+    return (
+      <span className={captionText}>No competitor snapshot yet — run a scan</span>
+    );
+  }
+
+  if (fetchedAt === null) {
+    return null;
+  }
+
+  return (
+    <time
+      dateTime={new Date(fetchedAt).toISOString()}
+      title={formatSnapshotAtFull(fetchedAt)}
+      className={captionText}
+    >
+      Snapshot {formatSnapshotAt(fetchedAt)}
+    </time>
+  );
+}
+
 /** FeatureMatrix — «мы vs они»: строки features/limits, колонки Us / конкурент. */
-export function FeatureMatrix({ signalId }: FeatureMatrixProps) {
+export function FeatureMatrix({ signalId, competitorId }: FeatureMatrixProps) {
   const company = useCompanyPricing();
-  const competitor = useCompetitorPricing(signalId);
+  const competitor = useCompetitorPricing(signalId, competitorId);
 
   if (company.kind === "loading" || competitor.kind === "loading") {
     return <BlockLoading title="Comparing feature sets" />;
@@ -278,27 +468,32 @@ export function FeatureMatrix({ signalId }: FeatureMatrixProps) {
   const planRows = rows.filter((row) => row.group === "Plan");
   const featureRows = rows.filter((row) => row.group === "Features");
   const differences = rows.filter((row) => row.differs).length;
-  const { competitorName } = competitor.data;
+  const { competitorName, source, fetchedAt } = competitor.data;
+  const noSnapshot = source === "none";
 
   return (
     <BlockShell title="Feature matrix" state="ready">
-      <div className="mb-[var(--space-3)] flex flex-wrap items-center justify-between gap-[var(--space-2)]">
-        <p className="font-[family-name:var(--font-mono)] text-[11px] text-[var(--color-text-muted)]">
-          {company.data.companyName} vs {competitorName} · {differences} difference
-          {differences === 1 ? "" : "s"}
+      <div
+        className="mb-[var(--space-3)] flex flex-wrap items-center justify-between gap-[var(--space-2)]"
+        data-source={source}
+      >
+        <p className={captionText}>
+          {company.data.companyName} vs {competitorName}
+          {noSnapshot
+            ? null
+            : ` · ${differences} difference${differences === 1 ? "" : "s"}`}
         </p>
-        {competitor.data.featuresFromCache ? (
-          <span className="rounded-[var(--radius-sm)] border border-[var(--palette-amber)] px-[var(--space-2)] py-[var(--space-1)] font-[family-name:var(--font-mono)] text-[11px] uppercase text-[var(--palette-amber)]">
-            cached snapshot
-          </span>
-        ) : null}
+        <SourceCaption source={source} fetchedAt={fetchedAt} />
       </div>
 
       <div className="overflow-x-auto">
         <table className="w-full min-w-[480px] border-collapse">
           <caption className="sr-only">
             Feature and limit comparison between {company.data.companyName} and{" "}
-            {competitorName}. Rows where the two differ are marked.
+            {competitorName}.{" "}
+            {noSnapshot
+              ? "No competitor snapshot has been captured yet; competitor cells are empty."
+              : "Rows where the two differ are marked."}
           </caption>
           <thead>
             <tr>
@@ -318,13 +513,20 @@ export function FeatureMatrix({ signalId }: FeatureMatrixProps) {
         </table>
       </div>
 
-      <p className="mt-[var(--space-3)] inline-flex items-center gap-[var(--space-2)] font-[family-name:var(--font-mono)] text-[11px] text-[var(--color-text-muted)]">
-        <span
-          className="inline-block h-2 w-2 rounded-full bg-[var(--palette-amber)]"
-          aria-hidden
-        />
-        Differs from your plan
-      </p>
+      {noSnapshot ? null : (
+        <p
+          className={cn(
+            captionText,
+            "mt-[var(--space-3)] inline-flex items-center gap-[var(--space-2)]",
+          )}
+        >
+          <span
+            className="inline-block h-2 w-2 rounded-full bg-[var(--palette-amber)]"
+            aria-hidden
+          />
+          Differs from your plan
+        </p>
+      )}
     </BlockShell>
   );
 }
