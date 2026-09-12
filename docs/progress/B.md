@@ -15,6 +15,7 @@
 | T-04 | готово | `03b7f34` | static site blueprint; CONVEX_DEPLOY_KEY sync:false; URL после Render |
 | T-17 | готово | `3c48b82` | ArtifactScreen: battlecard/offer, trail, Copy, pending/error/empty |
 | T-19 | готово | `7dd6731` | ArtifactBody единая точка рендера; landing из JSON, Us vs AcmeFlow |
+| T-16 | готово | — | `scan.run` отдаёт `runId` сразу, пайплайн в `scheduler`; 4 шага, assess отдельно |
 
 ## Приёмка
 
@@ -38,7 +39,30 @@
 
 ## Блокеры
 
-1. **Разные Convex deployment.** У B `dev:hidden-viper-502`, у A `pleasant-bandicoot-600`
-   (проект `grokmarketpulse`, команда `votapil` — общая). Нужен один общий dev-деплой.
-2. **У B нет ни одного API-ключа** — `.env.local` пустой, на `hidden-viper-502`
-   ноль env-переменных. Без `FIRECRAWL_API_KEY` T-08 не прогнать вживую.
+Оба сняты (дорожка A, общий деплой):
+
+1. ~~Разные Convex deployment.~~ B переключён на общий `dev:pleasant-bandicoot-600`
+   (team `votapil`, project `grokmarketpulse`). Свой `hidden-viper-502` больше не используется.
+2. ~~У B нет API-ключей.~~ `XAI_API_KEY`, `EXA_API_KEY`, `FIRECRAWL_API_KEY` уже стоят
+   на общем деплое. Ротация — только через A, локально в git ключи не кладём.
+
+Открыт: Wonder у B висит на старом канвасе («Welcome to Wonder», org `nikita-khitiaev`).
+Файл GrokMarketPulse в аккаунте виден, но хост держит один файл за раз — нужно открыть вручную.
+
+## Репетиция демо (прогнана на `pleasant-bandicoot-600`)
+
+`mock:flip v1` → `signals:purgeBySource` → baseline scrape → `mock:flip v2` → `scan:run`:
+
+- шаги: `firecrawl` HTTP 200 → `diff` 1 structural change → `grok_filter` skipped → `signal` done
+- ровно **один** сигнал `Pro 49 → 39`; assess догнал асинхронно (score 68, severity medium)
+- два скана подряд → второй пишет `signal: skipped / Already reported`, дубля нет
+
+Две находки по ходу репетиции (обе починены):
+
+1. **Firecrawl отдавал кэш.** В T-08 стоял `maxAge: 86_400_000`, и скан после
+   «Simulate competitor edit» видел **дофлипную** страницу — получался сигнал
+   `Pro 39 → 49`, то есть демо наизнанку. Теперь `maxAge: 0`.
+2. **Один скан может создать несколько сигналов.** `run.signalId` брал `signalIds[0]`,
+   и PulseScreen мог выбрать «Demo fixture disclaimer added» вместо $49 → $39.
+   Теперь главный сигнал выбирается по приоритету `price_change → new_plan → packaging`,
+   остальные тоже уходят в assess (не более 5 за прогон).

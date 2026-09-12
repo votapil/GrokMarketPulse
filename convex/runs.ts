@@ -1,6 +1,14 @@
 import { v } from "convex/values";
-import { query } from "./_generated/server";
+import { internalQuery, query } from "./_generated/server";
 import schema from "./schema";
+
+export const byId = internalQuery({
+  args: { runId: v.id("runs") },
+  returns: v.union(v.null(), schema.doc("runs")),
+  handler: async (ctx, { runId }) => {
+    return await ctx.db.get("runs", runId);
+  },
+});
 
 export const latest = query({
   args: { workspaceId: v.id("workspaces") },
