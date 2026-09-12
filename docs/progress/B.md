@@ -16,6 +16,7 @@
 | T-17 | готово | `3c48b82` | ArtifactScreen: battlecard/offer, trail, Copy, pending/error/empty |
 | T-19 | готово | `7dd6731` | ArtifactBody единая точка рендера; landing из JSON, Us vs AcmeFlow |
 | T-16 | готово | — | `scan.run` отдаёт `runId` сразу, пайплайн в `scheduler`; 4 шага, assess отдельно |
+| T-21 | готово | `ab17c90` / `421d127` | `act.generate` → pending + artifactId сразу; scheduler → ready; grok-4.6; 3 схемы; 1 retry → error; costs.log в `e42e31d` |
 
 ## Приёмка
 
@@ -90,10 +91,10 @@ B берёт это на себя в `T-22`: `setupWatchlist` создаёт к�
 
 | Файл | Кто держит | Задача |
 |------|-----------|--------|
-| `convex/act.ts` | B, оркестратор | T-21 |
-| `convex/prompts/artifacts.ts` | B, оркестратор | T-21 |
-| `convex/artifacts.ts` | B, оркестратор | T-21 |
-| `convex/costs.ts` | B, оркестратор | T-21 (кусок T-25) |
+| `convex/act.ts` | B | T-21 закрыта — не трогать без регенерации |
+| `convex/prompts/artifacts.ts` | B | T-21 закрыта |
+| `convex/artifacts.ts` | B | T-21 закрыта (только get/bySignal) |
+| `convex/costs.ts` | B | кусок T-25 уже в `e42e31d`; остаток — `usage.summary` |
 | `convex/snapshots.ts` | B, агент | T-42 |
 | `convex/exa.ts`, `convex/verify.ts` | B, агент | T-23 черновик |
 
