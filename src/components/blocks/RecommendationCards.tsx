@@ -180,7 +180,7 @@ export function RecommendationCards({
         {onRetry ? (
           <button
             type="button"
-            onClick={onRetry}
+            onClick={() => void onRetry()}
             className="mt-[var(--space-3)] inline-flex items-center gap-[var(--space-2)] rounded-[var(--radius-md)] border border-[var(--color-border)] bg-transparent px-[var(--space-3)] py-[var(--space-2)] font-[family-name:var(--font-sans)] text-[13px] font-[number:var(--weight-medium)] text-[var(--color-text)] hover:bg-[var(--palette-recessed)]"
           >
             <RefreshCw className="h-3.5 w-3.5" aria-hidden />

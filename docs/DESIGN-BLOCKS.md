@@ -1,9 +1,8 @@
-# DESIGN-BLOCKS.md — артборды блоков Pulse (дорожка A · T-37)
+# DESIGN-BLOCKS.md — артборды блоков GrokMarketPulse (дорожка A · T-37)
 
 **Wonder (единственный канвас команды):** [GrokMarketPulse](https://app.wonder.so/votapil/files/01a09523-7468-73ca-9838-1f163930bf0d/branches/main/pages/01a09523-7469-7d1a-93cb-ca004af7f12e) — орг. `votapil`, `fileId` `01a09523-7468-73ca-9838-1f163930bf0d`, `pageId` `01a09523-7469-7d1a-93cb-ca004af7f12e`, ветка `main`.
 
-
-> Прежний id из черновика (`01a09579-…` / nikita-volker) в аккаунте MCP **не найден**. Рабочий канвас — **GrokMarketPulse** выше. Токены **не переопределять** — канон в [`docs/DESIGN.md`](./DESIGN.md). На канвасе блоки сейчас с литералами hex (Wonder IR); в React — только `cssVar` из таблиц ниже.
+> Это **единственный** файл Wonder для A и B. Не открывать и не ссылаться как на primary на прежний `nikita-volker` / «Market Pulse» (`01a09579-…`) — deprecated. Токены **не переопределять** — канон в [`docs/DESIGN.md`](./DESIGN.md). На канвасе блоки с литералами hex (Wonder IR); в React — только `cssVar` из таблиц ниже.
 
 > Дорожка B не трогает артборды `Block/*` и `Panel/Chat`. Дорожка A не редактирует `Shell` / `Artifact` / `Landing` / `Sources` / State-*.
 
@@ -13,18 +12,18 @@
 
 | Артборд (канон) | Label на канвасе | `data-node-id` | Ready на канвасе | Скриншот MCP |
 |---|---|---|---|---|
-| `Block/SignalCard` | Block Signal Card | `deb` | **да** (AcmeFlow · Price change · High · 2m ago) | **снят** — ready, left accent 3px, LED high |
-| `Block/DiffView` | Block Diff View | `dis` | **да** (`Pro $49/mo → Pro $39/mo`, `−20%`, line diff) | **снят** — Fact-зона, display ~48px mono |
-| `Block/EvidenceCard` | Block Evidence Card | `yow` | **да** (Firecrawl · URL · fragment · 91%) | **снят** — recessed well `#12161a` |
-| `Block/MetricCards` | Block Metric Cards | `gmt` | **да** (threat / score / confidence / Δprice) | зум Fit на канвасе |
-| `Block/RecommendationCards` | Block Recommendation Cards | `goi` | **да** (3 rec + Generate, ~320×813) | зум Fit на канвасе |
-| `Panel/Chat` | Panel Chat | `aly` | **да** (Fact / Evidence / AI analysis, ~320×449) | зум Fit на канвасе |
+| `Block/SignalCard` | Block Signal Card | `deb` | **да** `280×109` (AcmeFlow · Price change · High · 2m ago) | **снят** — ready, left accent 3px, LED high |
+| `Block/DiffView` | Block Diff View | `dis` | **да** `720×239` (`Pro $49/mo → Pro $39/mo`, `−20%`, line diff) | **снят** — Fact-зона, display ~48px mono |
+| `Block/EvidenceCard` | Block Evidence Card | `yow` | **да** `480×164` (Firecrawl · URL · fragment · 91%) | **снят** — recessed well `#12161a` |
+| `Block/MetricCards` | Block Metric Cards | `gmt` | **да** `360×160` (Threat · Score · Confidence · Price Δ) | **снят** — grid 2×2 mini-panels |
+| `Block/RecommendationCards` | Block Recommendation Cards | `goi` | **да** `320×817` (3 cards · Generate outline) | **снят** — action panel stack |
+| `Panel/Chat` | Panel Chat | `aly` | **да** `320×432` (Fact / Evidence / AI analysis + composer) | **снят** — assessment stack |
 
-Геометрия (y≈2700+): Signal `280×100` · Diff `720×216` · Evidence `480×164` · Metrics `360×160` · Recs `320×813` · Chat `320×449`.
+Геометрия ready-блоков: Signal `280×109` · Diff `720×239` · Evidence `480×164` · Metric `360×160` · Rec `320×817` · Chat `320×432`.
 
-**Локальных PNG в репо нет** — Wonder MCP отдаёт кадр в чат, не файл. Для судьи/имплементации: открыть файл → зум к `deb` / `dis` / `yow`, либо повторить `take_screenshot` с id из таблицы. Для `gmt` / `goi` / `aly` эталон — React-сниппеты ниже (T-09 / T-13).
+**Локальных PNG в репо нет** — Wonder MCP отдаёт кадр в чат, не файл. Для судьи/имплементации: открыть [GrokMarketPulse](https://app.wonder.so/votapil/files/01a09523-7468-73ca-9838-1f163930bf0d/branches/main/pages/01a09523-7469-7d1a-93cb-ca004af7f12e) → зум к `deb` / `dis` / `yow` / `gmt` / `goi` / `aly`, либо повторить `take_screenshot` с id из таблицы.
 
-На каждом блоке в продукте нужны четыре состояния: `loading` · `empty` · `error` · `ready`. На канвасе сейчас только **ready** у трёх блоков; state-фреймы — в коде по таблице «Общие правила состояний».
+На каждом блоке в продукте нужны четыре состояния: `loading` · `empty` · `error` · `ready`. На канвасе — **ready** у всех шести; state-фреймы — в коде по таблице «Общие правила состояний».
 
 ---
 
@@ -154,7 +153,7 @@ Shell: feed `w-[280px]`, action panel `w-[320px]`, gap `space/2`–`space/4` (8�
 
 ## Block/SignalCard · T-09
 
-**Канвас:** `deb` · ready сверен со скрином. **Ready:** competitor name (title 18px sans bold), signal type mono caption, severity LED + label, relative time mono muted, selected — left border 3px `color/accent`.
+**Канвас:** `deb` · ready `280×109` сверен со скрином. **Ready:** competitor name (title 18px sans bold), signal type mono caption, severity LED + label, relative time mono muted, selected — left border 3px `color/accent`.
 
 | Состояние | Содержимое |
 |---|---|
@@ -189,7 +188,7 @@ Shell: feed `w-[280px]`, action panel `w-[320px]`, gap `space/2`–`space/4` (8�
 
 ## Block/DiffView · T-11
 
-**Канвас:** `dis` · ready сверен со скрином. **Ready:** Fact-зона. Before → After 48px+ black mono — **largest on screen**.
+**Канвас:** `dis` · ready `720×239` сверен со скрином. **Ready:** Fact-зона. Before → After 48px+ black mono — **largest on screen**.
 
 | Состояние | Содержимое |
 |---|---|
@@ -230,7 +229,7 @@ Shell: feed `w-[280px]`, action panel `w-[320px]`, gap `space/2`–`space/4` (8�
 
 ## Block/EvidenceCard · T-11
 
-**Канвас:** `yow` · ready сверен со скрином. **Ready:** Evidence-зона. Recessed well, URL, provider badge, timestamp, fragment, confidence.
+**Канвас:** `yow` · ready `480×164` сверен со скрином. **Ready:** Evidence-зона. Recessed well, URL, provider badge, timestamp, fragment, confidence.
 
 | Состояние | Содержимое |
 |---|---|
@@ -270,7 +269,7 @@ Shell: feed `w-[280px]`, action panel `w-[320px]`, gap `space/2`–`space/4` (8�
 
 ## Block/MetricCards · T-09
 
-**Канвас:** `gmt` — **пустой stub**; имплементировать по сниппету. **Ready:** grid 2×2 mini-panels on `color/surface`. Threat uses severity LED rules.
+**Канвас:** `gmt` · ready `360×160`. **Ready:** grid 2×2 mini-panels on `color/surface`. Threat uses severity LED rules.
 
 | Метрика | Пример | Стиль |
 |---|---|---|
@@ -316,7 +315,7 @@ Shell: feed `w-[280px]`, action panel `w-[320px]`, gap `space/2`–`space/4` (8�
 
 ## Block/RecommendationCards · T-13
 
-**Канвас:** `goi` — **пустой stub**. **Ready:** три карточки в action panel. Title sans bold; meta mono; **Generate** — outline (единственная saturated CTA на Shell остаётся Run Scan).
+**Канвас:** `goi` · ready `320×817`. **Ready:** три карточки в action panel. Title sans bold; meta mono; **Generate** — outline (единственная saturated CTA на Shell остаётся Run Scan).
 
 | Состояние | Содержимое |
 |---|---|
@@ -356,7 +355,7 @@ Shell: feed `w-[280px]`, action panel `w-[320px]`, gap `space/2`–`space/4` (8�
 
 ## Panel/Chat · T-13
 
-**Канвас:** `aly` — **пустой stub**. **Ready:** правая панель 320px — assessment stack (Fact / Evidence / AI analysis) + optional chat thread below.
+**Канвас:** `aly` · ready `320×432`. **Ready:** правая панель 320px — assessment stack (Fact / Evidence / AI analysis) + optional chat thread below.
 
 | Состояние | Содержимое |
 |---|---|
@@ -428,14 +427,14 @@ Label всегда `text-[var(--color-text)]`, never severity hex as body fill.
 
 | Задача | Компонент | Артборд | Канвас | Источник истины |
 |---|---|---|---|---|
-| T-09 | `SignalCard` | Block/SignalCard | `deb` ready | сниппет + скрин MCP |
-| T-09 | `MetricCards` | Block/MetricCards | `gmt` stub | **только сниппет** |
-| T-11 | `DiffView` | Block/DiffView | `dis` ready | сниппет + скрин MCP |
-| T-11 | `EvidenceCard` | Block/EvidenceCard | `yow` ready | сниппет + скрин MCP |
-| T-13 | `RecommendationCards` | Block/RecommendationCards | `goi` stub | **только сниппет** |
-| T-13 | `ActionPanel` / Chat | Panel/Chat | `aly` stub | **только сниппет** |
+| T-09 | `SignalCard` | Block/SignalCard | `deb` ready `280×109` | сниппет + скрин MCP |
+| T-09 | `MetricCards` | Block/MetricCards | `gmt` ready `360×160` | сниппет + скрин MCP |
+| T-11 | `DiffView` | Block/DiffView | `dis` ready `720×239` | сниппет + скрин MCP |
+| T-11 | `EvidenceCard` | Block/EvidenceCard | `yow` ready `480×164` | сниппет + скрин MCP |
+| T-13 | `RecommendationCards` | Block/RecommendationCards | `goi` ready `320×817` | сниппет + скрин MCP |
+| T-13 | `ActionPanel` / Chat | Panel/Chat | `aly` ready `320×432` | сниппет + скрин MCP |
 
-React+Tailwind сниппеты выше — ready-state эталон с `cssVar` из DESIGN.md. Wonder `get_element_code` для `deb`/`dis`/`yow` совпадает по копирайту и hex; в продукте биндить токены, не копировать литералы с канваса.
+React+Tailwind сниппеты выше — ready-state эталон с `cssVar` из DESIGN.md. Wonder `get_element_code` для `deb`/`dis`/`yow`/`gmt`/`goi`/`aly` совпадает по копирайту и hex; в продукте биндить токены, не копировать литералы с канваса.
 
 ### Чеклист имплементации (T-09 / T-11 / T-13)
 

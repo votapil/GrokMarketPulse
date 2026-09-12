@@ -61,22 +61,22 @@ export function BlockRenderer({ signalId }: BlockRendererProps) {
 
   if (blocks === undefined) {
     return (
-      <div
+      <section
         className="space-y-[var(--space-4,16px)]"
         aria-busy="true"
         aria-label="Loading workspace blocks"
       >
         {renderBlocks(defaultLayoutForSignal(signalId))}
-      </div>
+      </section>
     );
   }
 
   return (
-    <div
+    <section
       className="space-y-[var(--space-4,16px)]"
       aria-label="Signal workspace"
     >
       {renderBlocks(blocks)}
-    </div>
+    </section>
   );
 }

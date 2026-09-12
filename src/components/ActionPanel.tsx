@@ -4,6 +4,7 @@ import { RefreshCw } from "lucide-react";
 import { api } from "../../convex/_generated/api";
 import type { Id } from "../../convex/_generated/dataModel";
 import { RecommendationCards } from "@/components/blocks/RecommendationCards";
+import { resolveEvidenceUrl } from "@/components/blocks/DiffView";
 import { cn } from "@/lib/utils";
 
 type ActionPanelProps = {
@@ -78,16 +79,9 @@ function EvidenceSection({
   sourceUrl: string;
   evidenceUrls: string[];
 }) {
-  const urls = (evidenceUrls.length > 0 ? evidenceUrls : [sourceUrl]).filter(
-    (url) => {
-      try {
-        const { protocol } = new URL(url);
-        return protocol === "https:" || protocol === "http:";
-      } catch {
-        return false;
-      }
-    },
-  );
+  const urls = (evidenceUrls.length > 0 ? evidenceUrls : [sourceUrl])
+    .map((url) => resolveEvidenceUrl(url))
+    .filter((url) => url !== "#" && /^https?:\/\//i.test(url));
 
   return (
     <section className="rounded-[var(--radius-md)] border border-[var(--color-border)] bg-[var(--palette-recessed)] p-[var(--space-3)]">

@@ -80,10 +80,7 @@ export function MetricCards({ block }: BlockComponentProps) {
     <BlockShell title="Metrics" state="ready">
       <div className="grid grid-cols-2 gap-[var(--space-2,8px)] md:grid-cols-3 lg:grid-cols-5">
         <MetricTile label="Threat">
-          <SeverityLed
-            level={signal.severity as Level}
-            label={signal.severity}
-          />
+          <SeverityLed level={signal.severity} label={signal.severity} />
         </MetricTile>
 
         <MetricTile label="Score">
@@ -105,10 +102,7 @@ export function MetricCards({ block }: BlockComponentProps) {
         </MetricTile>
 
         <MetricTile label="Urgency">
-          <SeverityLed
-            level={signal.urgency as Level}
-            label={signal.urgency}
-          />
+          <SeverityLed level={signal.urgency} label={signal.urgency} />
         </MetricTile>
 
         <MetricTile label="Price Δ">

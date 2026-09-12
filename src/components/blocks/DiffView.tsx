@@ -197,33 +197,40 @@ export function buildDiffLines(
  * so Evidence links open a working pricing page in the demo.
  */
 export function resolveEvidenceUrl(url: string): string {
+  // Callers: EvidenceCard href, ActionPanel EvidenceSection. Blocks non-http(s)
+  // schemes from Exa/Firecrawl evidence URLs (XSS via javascript:).
   const siteUrl = (import.meta.env.VITE_CONVEX_SITE_URL as string | undefined)?.replace(
     /\/$/,
     "",
   );
 
-  if (!siteUrl) {
-    return url;
-  }
-
   if (url.startsWith("/mock/")) {
-    return `${siteUrl}${url}`;
+    return siteUrl ? `${siteUrl}${url}` : "#";
   }
 
   try {
     const parsed = new URL(url);
-    const isMockHost = parsed.hostname === "acmeflow.example";
+    if (parsed.protocol !== "https:" && parsed.protocol !== "http:") {
+      return "#";
+    }
+
+    const isMockHost =
+      parsed.hostname === "acmeflow.example" ||
+      parsed.hostname.endsWith(".example");
     const isMockPath = parsed.pathname.includes("/mock/");
 
     if (isMockHost || isMockPath) {
+      if (!siteUrl) {
+        return "#";
+      }
       const path = isMockPath ? parsed.pathname : "/mock/acmeflow/pricing";
       return `${siteUrl}${path}${parsed.search}`;
     }
-  } catch {
-    return url;
-  }
 
-  return url;
+    return url;
+  } catch {
+    return "#";
+  }
 }
 
 function DiffSkeleton() {
