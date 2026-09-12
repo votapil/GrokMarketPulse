@@ -70,36 +70,20 @@ export function defaultLayout(signalId: string) {
 // Приоритеты по типу бизнеса (ТЗ §23). Уходят в промпт подсказкой, а не жёстким
 // фильтром: конкретный сигнал может требовать другого порядка.
 const PRIORITY_SAAS: BlockType[] = [
-  "DiffView",
-  "MetricCards",
-  "EvidenceCard",
-  "FeatureMatrix",
-  "DataGrid",
+  "DiffView", "MetricCards", "EvidenceCard", "FeatureMatrix", "DataGrid",
   "RecommendationCards",
 ];
 
 const PRIORITY_LOCAL: BlockType[] = [
-  "GeoMap",
-  "SignalCard",
-  "MetricCards",
-  "EvidenceCard",
-  "RecommendationCards",
+  "GeoMap", "SignalCard", "MetricCards", "EvidenceCard", "RecommendationCards",
 ];
 
 const PRIORITY_ECOMMERCE: BlockType[] = [
-  "DataGrid",
-  "Chart",
-  "DiffView",
-  "MetricCards",
-  "RecommendationCards",
+  "DataGrid", "Chart", "DiffView", "MetricCards", "RecommendationCards",
 ];
 
 const PRIORITY_GENERIC: BlockType[] = [
-  "SignalCard",
-  "DiffView",
-  "EvidenceCard",
-  "MetricCards",
-  "RecommendationCards",
+  "SignalCard", "DiffView", "EvidenceCard", "MetricCards", "RecommendationCards",
 ];
 
 export function priorityFor(businessType: string): BlockType[] {
@@ -241,31 +225,7 @@ const vLayoutContext = v.object({
   artifactId: v.union(v.null(), v.id("artifacts")),
 });
 
-type LayoutContext = {
-  workspaceId: Id<"workspaces">;
-  signalId: Id<"signals">;
-  competitorId: Id<"competitors">;
-  competitorName: string;
-  competitorKind: string;
-  businessType: string;
-  category: string;
-  signalType: string;
-  title: string;
-  summary: string;
-  previousState: string;
-  currentState: string;
-  kind: string;
-  severity: string;
-  urgency: string;
-  score: number;
-  confidence: number;
-  status: string;
-  hasAssessment: boolean;
-  recommendationCount: number;
-  evidenceCount: number;
-  historyPoints: number;
-  artifactId: Id<"artifacts"> | null;
-};
+type LayoutContext = Infer<typeof vLayoutContext>;
 
 export const loadContext = internalQuery({
   args: { signalId: v.id("signals") },
