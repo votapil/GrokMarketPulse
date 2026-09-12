@@ -330,6 +330,12 @@ export const compare = action({
         });
 
         const parsed = parseJsonWithRetry(result.text, isGrokChanges);
+        if (!parsed.ok) {
+          console.error(
+            "detect.compare Grok noise filter JSON invalid:",
+            parsed.error,
+          );
+        }
         if (parsed.ok) {
           const structuralTypes = new Set(["price_change", "new_plan", "plan_removed"]);
           for (const change of parsed.value.changes) {
