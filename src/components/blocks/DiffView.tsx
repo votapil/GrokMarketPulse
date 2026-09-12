@@ -236,6 +236,7 @@ export function resolveEvidenceUrl(url: string): string {
 function DiffSkeleton() {
   return (
     <section
+      data-block-state="loading"
       aria-busy="true"
       className="rounded-[var(--radius-md)] border border-dashed border-[var(--color-border)] bg-[var(--color-surface)] p-[var(--space-4)]"
     >
@@ -266,7 +267,10 @@ function DiffSkeleton() {
 
 function DiffEmpty() {
   return (
-    <section className="rounded-[var(--radius-md)] border border-dashed border-[var(--color-border)] bg-[var(--color-surface)] p-[var(--space-4)]">
+    <section
+      data-block-state="empty"
+      className="rounded-[var(--radius-md)] border border-dashed border-[var(--color-border)] bg-[var(--color-surface)] p-[var(--space-4)]"
+    >
       <p className="font-[family-name:var(--font-sans)] text-[14px] text-[var(--color-text-muted)]">
         No price diff for this signal
       </p>
@@ -276,7 +280,10 @@ function DiffEmpty() {
 
 function DiffError({ message, onRetry }: { message: string; onRetry: () => void }) {
   return (
-    <section className="rounded-[var(--radius-md)] border border-[var(--palette-accent)] bg-[var(--color-surface)] p-[var(--space-4)]">
+    <section
+      data-block-state="error"
+      className="rounded-[var(--radius-md)] border border-[var(--palette-accent)] bg-[var(--color-surface)] p-[var(--space-4)]"
+    >
       <p className="font-[family-name:var(--font-sans)] text-[14px] font-[number:var(--weight-medium)] text-[var(--color-text)]">
         Diff unavailable
       </p>
@@ -311,7 +318,10 @@ function DiffReady({ bundle }: { bundle: SignalBundle }) {
   }
 
   return (
-    <section className="rounded-[var(--radius-md)] border border-[var(--color-border)] bg-[var(--color-surface)] p-[var(--space-4)]">
+    <section
+      data-block-state="ready"
+      className="rounded-[var(--radius-md)] border border-[var(--color-border)] bg-[var(--color-surface)] p-[var(--space-4)]"
+    >
       <p className="font-[family-name:var(--font-mono)] text-[11px] uppercase tracking-wide text-[var(--color-text-muted)]">
         Fact · {signal.type.replace(/_/g, " ")}
       </p>
