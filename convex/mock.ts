@@ -1,8 +1,7 @@
 import { v } from "convex/values";
-import { action, internalMutation, query } from "./_generated/server";
+import { action, env, internalMutation, query } from "./_generated/server";
 import { internal } from "./_generated/api";
-
-const MOCK_SLUG = "acmeflow";
+import { MOCK_PRICING_PATH, MOCK_SLUG } from "./mockHtml";
 
 export const state = query({
   args: {},
@@ -47,5 +46,13 @@ export const flip = action({
   handler: async (ctx, { variant }) => {
     await ctx.runMutation(internal.mock.flipVariant, { variant });
     return null;
+  },
+});
+
+export const siteUrl = query({
+  args: {},
+  returns: v.string(),
+  handler: async () => {
+    return `${env.CONVEX_SITE_URL.replace(/\/$/, "")}${MOCK_PRICING_PATH}`;
   },
 });
