@@ -25,7 +25,8 @@
 | T-41 | готово | `4865bfc` | Summary + Generate landing page |
 | T-22b | готово | `70f8456` | setupWatchlist + /setup; demo AcmeFlow не затирается; `/`→`/setup` только без slug demo |
 | T-33 | готово | `daf31a5` | fal.hero после ready; ошибка → null |
-| T-35 | готово | — | `discovery.suggest` + `list`; 3–5 Exa-кандидатов; sameProduct/region/distanceKm в summary JSON; кап Exa $2 до T-31 |
+| T-35 | готово | `f9d0b73` | `discovery.suggest` + `list`; 3–5 Exa-кандидатов; sameProduct/region/distanceKm в summary JSON; кап Exa $2 до T-31 |
+| T-31 | готово | — | суточный стоп 80 Firecrawl / $3 Exa / $5 Grok; cron 30 мин → scanAll (seed/manual); mock не трогает |
 
 A: `CompetitorScope` всё ещё на фикстурах — после pull читай `api.discovery.list({ workspaceId })` (и `suggest` по кнопке). Поле `sameProduct`, не `sameProducts`.
 A: смонтируй `<UsageBadge workspaceId={workspaceId} />` внизу Pulse
@@ -119,6 +120,8 @@ B берёт это на себя в `T-22`: `setupWatchlist` создаёт к�
 | `convex/snapshots.ts` | B | T-42 код на месте — не `convex dev` до явного пуша |
 | `convex/exa.ts`, `convex/verify.ts` | B | T-23 закрыта |
 | `convex/discovery.ts`, `convex/discoveryLogic.ts` | B | T-35 закрыта — не трогать |
+| `convex/budget.ts`, `convex/budgetLogic.ts`, `convex/crons.ts` | B | T-31 — не трогать |
+| `convex/scan.ts` | B | T-31 gate + scanAll — не `convex dev` до пуша |
 
 **Замок на деплой.** Общий `pleasant-bandicoot-600`: `npx convex dev` пушит всё рабочее
 дерево целиком, поэтому пушит только оркестратор и только `--once` после зелёного

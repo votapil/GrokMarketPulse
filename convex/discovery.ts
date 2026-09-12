@@ -2,8 +2,7 @@
  * T-35 Exa discovery: find nearby / same-niche competitors and persist them
  * through the single watchlist writer (`internal.workspace.upsertWatchlist`).
  *
- * T-31 budget.ts is not in yet — we honor a local Exa USD cap so a public demo
- * cannot loop paid `/search`. T-40 reads `api.discovery.list`.
+ * Daily stop is `api.budget.check` (T-31). T-40 reads `api.discovery.list`.
  */
 
 import { v } from "convex/values";
@@ -31,7 +30,6 @@ import {
   type ExaSearchOutcome,
 } from "./exa";
 import {
-  DISCOVERY_EXA_BUDGET_USD,
   DISCOVERY_GROK_INSTRUCTIONS,
   DISCOVERY_GROK_SCHEMA,
   DISCOVERY_MAX,
@@ -42,7 +40,6 @@ import {
   encodeSuggestionMeta,
   hostKey,
   isGrokCandidatePayload,
-  isOverExaBudget,
   kindFromSameProduct,
   parseGrokCandidates,
   pickUniqueHits,
@@ -422,12 +419,12 @@ export const suggest = action({
       return empty("Workspace or company not found", true);
     }
 
-    const usage = await ctx.runQuery(api.usage.summary, { workspaceId });
-    if (isOverExaBudget(usage.exaUsd, DISCOVERY_EXA_BUDGET_USD)) {
-      return empty(
-        `Exa budget cap reached ($${DISCOVERY_EXA_BUDGET_USD.toFixed(2)}) — T-31 stand-in`,
-        true,
-      );
+    const budget = await ctx.runQuery(api.budget.check, {
+      workspaceId,
+      now: Date.now(),
+    });
+    if (!budget.ok) {
+      return empty(budget.reason ?? "Daily sponsor cap reached", true);
     }
 
     const query = buildDiscoveryQuery({

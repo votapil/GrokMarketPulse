@@ -53,6 +53,7 @@ type StepPatch = { key: string; status: StepStatus; detail: string };
 type CreateRunResult = {
   runId: Id<"runs">;
   reused: boolean;
+  blocked: boolean;
   sourceId: Id<"sources"> | null;
 };
 
@@ -61,6 +62,7 @@ export const createRun = internalMutation({
   returns: v.object({
     runId: v.id("runs"),
     reused: v.boolean(),
+    blocked: v.boolean(),
     sourceId: v.union(v.null(), v.id("sources")),
   }),
   handler: async (ctx, { competitorId }): Promise<CreateRunResult> => {
@@ -70,6 +72,35 @@ export const createRun = internalMutation({
     }
 
     const now = Date.now();
+
+    const budget: {
+      ok: boolean;
+      reason: string | null;
+    } = await ctx.runQuery(api.budget.check, {
+      workspaceId: competitor.workspaceId,
+      now,
+    });
+    if (!budget.ok) {
+      const runId = await ctx.db.insert("runs", {
+        workspaceId: competitor.workspaceId,
+        competitorId,
+        kind: "scan",
+        status: "error",
+        startedAt: now,
+        finishedAt: now,
+        signalId: null,
+        steps: [
+          {
+            key: "budget",
+            label: "Budget guard",
+            status: "error",
+            detail: budget.reason ?? "Daily sponsor cap reached",
+          },
+        ],
+        error: budget.reason ?? "Daily sponsor cap reached",
+      });
+      return { runId, reused: false, blocked: true, sourceId: null };
+    }
 
     // Guard: a second Run Scan while one is in flight joins the existing run
     // instead of producing a duplicate signal.
@@ -88,7 +119,7 @@ export const createRun = internalMutation({
     );
 
     if (active) {
-      return { runId: active._id, reused: true, sourceId: null };
+      return { runId: active._id, reused: true, blocked: false, sourceId: null };
     }
 
     const sources = await ctx.db
@@ -114,7 +145,7 @@ export const createRun = internalMutation({
       error: null,
     });
 
-    return { runId, reused: false, sourceId: source?._id ?? null };
+    return { runId, reused: false, blocked: false, sourceId: source?._id ?? null };
   },
 });
 
@@ -367,7 +398,7 @@ export const run = action({
       competitorId,
     });
 
-    if (!created.reused) {
+    if (!created.reused && !created.blocked) {
       await ctx.scheduler.runAfter(0, internal.scan.execute, {
         runId: created.runId,
         competitorId,
@@ -376,5 +407,55 @@ export const run = action({
     }
 
     return { runId: created.runId };
+  },
+});
+
+export const listDemoScanTargets = internalQuery({
+  args: {},
+  returns: v.array(
+    v.object({
+      workspaceId: v.id("workspaces"),
+      competitorId: v.id("competitors"),
+    }),
+  ),
+  handler: async (ctx) => {
+    const workspace = await ctx.db
+      .query("workspaces")
+      .withIndex("by_slug", (q) => q.eq("slug", "demo"))
+      .unique();
+    if (!workspace) return [];
+
+    const competitors = await ctx.db
+      .query("competitors")
+      .withIndex("by_workspace", (q) => q.eq("workspaceId", workspace._id))
+      .take(16);
+
+    return competitors
+      .filter((row) => row.origin === "seed" || row.origin === "manual")
+      .map((row) => ({
+        workspaceId: workspace._id,
+        competitorId: row._id,
+      }));
+  },
+});
+
+/**
+ * Cron target. Does not flip the mock site. One competitor at a time so a
+ * budget stop mid-loop does not fan out more scrapes.
+ */
+export const scanAll = internalAction({
+  args: {},
+  returns: v.null(),
+  handler: async (ctx) => {
+    const targets: Array<{
+      workspaceId: Id<"workspaces">;
+      competitorId: Id<"competitors">;
+    }> = await ctx.runQuery(internal.scan.listDemoScanTargets, {});
+    if (targets.length === 0) return null;
+
+    for (const target of targets) {
+      await ctx.runAction(api.scan.run, { competitorId: target.competitorId });
+    }
+    return null;
   },
 });

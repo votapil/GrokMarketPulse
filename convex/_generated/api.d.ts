@@ -11,8 +11,11 @@
 import type * as act from "../act.js";
 import type * as artifacts from "../artifacts.js";
 import type * as assess from "../assess.js";
+import type * as budget from "../budget.js";
+import type * as budgetLogic from "../budgetLogic.js";
 import type * as chat from "../chat.js";
 import type * as costs from "../costs.js";
+import type * as crons from "../crons.js";
 import type * as detect from "../detect.js";
 import type * as diff from "../diff.js";
 import type * as discovery from "../discovery.js";
@@ -51,8 +54,11 @@ declare const fullApi: ApiFromModules<{
   act: typeof act;
   artifacts: typeof artifacts;
   assess: typeof assess;
+  budget: typeof budget;
+  budgetLogic: typeof budgetLogic;
   chat: typeof chat;
   costs: typeof costs;
+  crons: typeof crons;
   detect: typeof detect;
   diff: typeof diff;
   discovery: typeof discovery;
