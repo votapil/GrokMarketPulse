@@ -21,6 +21,7 @@
 - T-02 принято
 - T-09 / T-11 / T-07 / T-13 — приняты по сборке: `npm run build` зелёный после rebase на `6fae8ca`
 - T-14 принято (`4c1ad1a`) — snapshot-контракт B цел; замечания A (public `purgeBySource`, leftover `$`, concurrent insert) не блок
+- T-18 принято (`dac887a`) — только `assess.ts`; Pro $45, scoreExplanation, low_confidence
 - T-15 App `/` принято (`8f8461f`) — A сама повесила `PulseScreen`
 - T-15 `PulseScreen` возврат: двойные `<aside>` вокруг `SignalsFeed` и `ActionPanel` (заголовки + ширина/скролл) — правит A
 
