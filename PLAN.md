@@ -489,7 +489,7 @@ export type LoadState<T> =
 
 | ID | Дорожка | Задача | Зависит от | Владеет файлами | ~мин | ✔ |
 |----|---------|--------|-----------|-----------------|------|---|
-| T-01 | общая (A делает, B ждёт) | Бутстрап: Convex + Vite + React + Tailwind + shadcn, env-ключи, `.mcp.json`, чистка мусора | — | всё сгенерированное: `package.json`, `vite.config.ts`, `tailwind.config.*`, `convex/*`, `src/*`, `.gitignore`, `README.md`, `.mcp.json`; удаляет `longp.json` | 30 | [~] |
+| T-01 | общая (A делает, B ждёт) | Бутстрап: Convex + Vite + React + Tailwind + shadcn, env-ключи, `.mcp.json`, чистка мусора | — | всё сгенерированное: `package.json`, `vite.config.ts`, `tailwind.config.*`, `convex/*`, `src/*`, `.gitignore`, `README.md`, `.mcp.json`; удаляет `longp.json` | 30 | [x] |
 | T-02 | общая (A делает, B ждёт) | Замороженные контракты + заглушка на каждый модуль обеих дорожек | T-01 | `convex/schema.ts` + файл-заглушка каждого модуля из §5, `src/lib/types.ts`, `src/lib/fixtures.ts`, `src/components/artifacts/ArtifactBody.tsx` | 55 | [ ] |
 | T-03 | B (идёт параллельно T-01/T-02, файлов репо не трогает) | Wonder: общий файл-канвас, токены, артборды Shell / Artifact / Sources / Landing → `docs/DESIGN.md` | — | `docs/DESIGN.md` | 60 | [ ] |
 

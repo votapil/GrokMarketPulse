@@ -1,25 +1,42 @@
-# secrets
-.env
-.env.*
-!.env.example
-!.env.local.example
+# Logs
+logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
 
 # deps and build
 node_modules/
 dist/
+dist-ssr/
 build/
 .output/
 .turbo/
 .vite/
 *.tsbuildinfo
 
+# env / secrets
+.env
+.env.*
+*.local
+!.env.example
+!.env.local.example
+
 # Convex local
 .convex/
 
-# logs and OS
-*.log
-npm-debug.log*
+# Editor directories and files
+.vscode/*
+!.vscode/extensions.json
+.idea
 .DS_Store
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
 Thumbs.db
 
 # python
@@ -28,3 +45,6 @@ __pycache__/
 
 # ECC checkpoints (per machine)
 .claude/checkpoints.log
+
+# local scaffold leftover
+scaffold/

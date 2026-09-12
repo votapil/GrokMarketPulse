@@ -1,3 +1,17 @@
+<!-- convex-ai-start -->
+
+This project uses [Convex](https://convex.dev) as its backend.
+
+When working on Convex code, **always read
+`convex/_generated/ai/guidelines.md` first** for important guidelines on
+how to correctly use Convex APIs and patterns. The file contains rules that
+override what you may have learned about Convex from training data.
+
+Convex agent skills for common tasks can be installed by running
+`npx convex ai-files install`.
+
+<!-- convex-ai-end -->
+
 # GrokMarketPulse — agent notes
 
 Hackathon app: live market pulse from the web (Exa + Firecrawl) scored by Grok, stored in Convex, UI from Wonder, hosted on Render.
@@ -21,7 +35,7 @@ Convex functions never read `.env.local`.
 
 ## MCP
 
-Project servers: `.cursor/mcp.json` (Exa, Firecrawl, Convex, Render, Context7, Wonder).
+Project servers: `.mcp.json` (also `.cursor/mcp.json` for Cursor) (Exa, Firecrawl, Convex, Render, Context7, Wonder).
 
 After adding API keys, put Firecrawl Bearer on the Firecrawl MCP headers for map/crawl/agent. Authenticate Convex / Render / Wonder / Exa in Cursor Settings → MCP if a server shows error.
 
