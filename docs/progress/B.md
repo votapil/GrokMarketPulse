@@ -28,7 +28,16 @@
 - T-15 `PulseScreen` возврат: двойные `<aside>` вокруг `SignalsFeed` и `ActionPanel` всё ещё на месте
 - T-20 принято (`781bde0`) — только `recommend.ts`
 
-## S-1 от B — `api.workspace.setupWatchlist` (нужно подтверждение A)
+## S-1 от B — `api.workspace.setupWatchlist` (**подтверждён A**, `d5fd674`)
+
+A подтвердил и попросил: `internalMutation` с той же логикой для вызова из `onboarding.analyze`,
+идемпотентность по нормализованному URL, возврат `competitorId`/`sourceId`, `origin` от вызывающего,
+валидация URL, пустой список — no-op. Один писатель в `competitors`/`sources` остаётся у B,
+`discovery.ts` (`T-35`) придёт туда же. Условия перенесены в карточку `T-22`.
+
+Отдельная просьба A: публичный `api.snapshots.latest` — заведён как `T-42` (~15 мин), без него
+`FeatureMatrix` держит фичи конкурента на фикстуре.
+
 
 Схема **не меняется**, существующие сигнатуры **не меняются** — добавляется одна строка в `PLAN.md` §3.2
 и новая функция в `convex/workspace.ts` (файл B). Останавливаться A не нужно, достаточно `git pull --rebase`.

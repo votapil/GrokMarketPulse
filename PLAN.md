@@ -461,6 +461,7 @@ api.scan.run            ({ competitorId })                         -> { runId: I
 api.onboarding.analyze  ({ companyUrl, competitorUrls: string[] }) -> { runId: Id<"runs">, workspaceId }
 api.workspace.setupWatchlist ({ companyUrl, competitorUrls: string[] })
                                                                    -> { workspaceId, runId, competitorIds: Id<"competitors">[] }
+api.snapshots.latest    ({ sourceId })                             -> Snapshot | null
 api.verify.again        ({ signalId })                             -> { runId: Id<"runs"> }
 api.act.generate        ({ signalId, recommendationId })           -> { artifactId: Id<"artifacts"> }
 api.chat.ask            ({ workspaceId, text })                    -> { messageId: Id<"chatMessages"> }
@@ -574,6 +575,7 @@ export type LoadState<T> =
 | **T-32** | **A** | **`DataGrid` с inline-правкой прайсинга + `FeatureMatrix`** | T-29 | `src/components/blocks/DataGrid.tsx`, `src/components/blocks/FeatureMatrix.tsx` | 45 | [~] |
 | **T-39** | **A** | **Точка входа «моя компания»: одно предзаполненное поле → `onboarding.analyze`** | T-12, T-38 | `src/components/CompanyBar.tsx` | 30 | [~] |
 | T-22 | B | Экран Setup: intake (свой сайт + сайты конкурентов) → watchlist + тумблер `Simulate competitor edit`; `workspace.setupWatchlist` | T-05, T-10 | `src/screens/SourcesScreen.tsx`, `src/components/SourceRow.tsx`, `src/components/DemoToggle.tsx`, `convex/workspace.ts`, `src/App.tsx` (редирект), `src/components/shell/**` | 45 | [~] |
+| T-42 | B | Публичный `api.snapshots.latest` — просьба A: `FeatureMatrix` (`T-32`) берёт фичи конкурента из фикстуры, потому что в `snapshots.ts` только `internalQuery` | T-08 | `convex/snapshots.ts` | 15 | [ ] |
 
 **После `T-32` отрезок 0:00–1:00 сценария §1 проходится целиком** — это КТ-2, минимум, ради которого
 делается проект. Всё дальше усиливает, но не спасает.
@@ -1323,7 +1325,9 @@ A: T-36 карта ──▶        B: T-21 ─ T-17 ─ T-19 ─ T-33 ─ T-34 
 Готово, когда:
 - [ ] **ровно два контрола** и одна кнопка `Analyze & set baseline`: инпут `Your website` и textarea `Competitor websites` (один URL в строке, 1–3 штуки). Оба **предзаполнены** демо-значениями — обязательных к заполнению полей нет
 - [ ] один экран, без шагов и визарда; результат анализа (распознанный тип бизнеса, сегменты, тарифы) показывается тут же
-- [ ] `api.workspace.setupWatchlist({companyUrl, competitorUrls})` (§3.2) создаёт строки `competitors` и `sources` **по каждому введённому URL** и снимает baseline-снапшот; контекст компании берётся вызовом `api.onboarding.analyze`. Повторный вызов с теми же URL не плодит дубли
+- [ ] `api.workspace.setupWatchlist({companyUrl, competitorUrls})` (§3.2) создаёт строки `competitors` и `sources` **по каждому введённому URL** и снимает baseline-снапшот; контекст компании берётся вызовом `api.onboarding.analyze`
+- [ ] условия A из ответа на S-1 (`docs/progress/A.md`): рядом с action лежит **`internalMutation` с той же логикой** — её позовёт `onboarding.analyze`, чтобы закрыть тихий отказ «N competitor URLs noted» без дубля; идемпотентность по **нормализованному** URL; возврат `competitorId` и `sourceId`; `origin` проставляет вызывающий (`manual` / `exa` / `grok`); валидация URL на входе; пустой список — no-op, а не ошибка
+- [ ] у `competitors` и `sources` остаётся **один писатель** — этот файл: `discovery.ts` (`T-35`) придёт сюда же, а не заведёт вторую нормализацию
 - [ ] введённые конкуренты **доходят до скана**: после Analyze на `/` есть что сканировать без `seed:ensure`
 - [ ] маршрут `/setup` (старый `/sources` остаётся редиректом), первый пункт нава; при `company.contextStatus === "empty"` корень `/` редиректит на `/setup`, при заполненном демо-воркспейсе — нет
 - [ ] список источников конкурента с типом, датой последнего скрейпа и HTTP-статусом
