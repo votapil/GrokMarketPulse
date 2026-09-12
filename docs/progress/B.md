@@ -23,8 +23,8 @@
 | T-25 | готово | `5aef18a` | `usage.summary` страницами `take(256)`, без Date.now |
 | T-26 | готово | `0f5a7d2` | `UsageBadge` готов |
 | T-41 | готово | `4865bfc` | Summary + Generate landing page |
-| T-22b | готово | — | setupWatchlist + /setup; demo AcmeFlow не затирается; `/`→`/setup` только без slug demo |
-| T-33 | готово | — | fal.hero после ready; ошибка → null |
+| T-22b | готово | `70f8456` | setupWatchlist + /setup; demo AcmeFlow не затирается; `/`→`/setup` только без slug demo |
+| T-33 | готово | `daf31a5` | fal.hero после ready; ошибка → null |
 | T-25 | в работе | — | `usage.summary` без `.collect()` / `Date.now()` |
 | T-26 | в работе | — | `UsageBadge` готов, A монтирует |
 | T-41 | в работе | — | Summary + Generate landing на ArtifactScreen |
@@ -38,6 +38,8 @@ A: смонтируй `<UsageBadge workspaceId={workspaceId} />` внизу Puls
 - T-39 принято (`326c2ba`) — `restoreDemoContext` возвращает Helpdesk Pro $45
 - T-15 принято (`294acdf`) — фикстурный signalId больше не роняет Pulse
 - T-32 принято (`c76b6f4`) — layout всегда ставит DataGrid
+- T-15 принято (`987995c`) — Pulse прогресс/блокировка Run Scan только по kind=scan
+- T-11 принято (`b7ecc84`) — EvidenceSection без дублей key
 - S-1 принято (`50b2b32`) — A подтвердил setupWatchlist; T-22b не затирает demo
 - T-29 / T-30 принято (`006ad19`) — чип Why is this High отдаёт блоки и фокус сигнала
 - T-02 принято
