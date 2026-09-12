@@ -1,6 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useAction, useQuery } from "convex/react";
-import { Activity } from "lucide-react";
 import { api } from "../../convex/_generated/api";
 import type { Id } from "../../convex/_generated/dataModel";
 import { SignalsFeed } from "@/components/SignalsFeed";
@@ -12,10 +11,10 @@ import { RunScanButton } from "@/components/RunScanButton";
 import { ScanProgress } from "@/components/ScanProgress";
 
 /**
- * T-15 contract: three-pane Pulse composition owned by track A.
- * Callers: shell PulsePage / App route `/`. Uses workspace.demo + seed.ensure;
- * SignalsFeed / BlockRenderer / ActionPanel on selected signalId.
- * Run Scan + step progress from api.scan.run / api.runs.latest.
+ * T-15: Pulse composition. Callers: App `/` / shell PulsePage.
+ * Feed and ActionPanel own their column chrome (aside/border/width) —
+ * do not wrap them again or borders/padding double up.
+ * Run Scan + steps via api.scan.run / api.runs.latest.
  */
 export function PulseScreen() {
   const demo = useQuery(api.workspace.demo);
@@ -120,24 +119,11 @@ export function PulseScreen() {
       ) : null}
 
       <div className="flex min-h-0 flex-1">
-        <aside
-          className="flex w-[var(--size-feed)] shrink-0 flex-col gap-[var(--space-3)] border-r border-[var(--color-border)] bg-[var(--palette-recessed)] p-[var(--space-3)]"
-          aria-label="Signals feed"
-        >
-          <div className="flex items-center gap-[var(--space-2)] text-[var(--color-text-muted)]">
-            <Activity aria-hidden="true" className="h-4 w-4" />
-            <h2 className="font-[family-name:var(--font-mono)] text-[13px] uppercase">
-              Signals
-            </h2>
-          </div>
-          <div className="min-h-0 flex-1 overflow-y-auto">
-            <SignalsFeed
-              workspaceId={workspaceId}
-              selectedSignalId={selectedSignalId}
-              onSelectSignal={setSelectedSignalId}
-            />
-          </div>
-        </aside>
+        <SignalsFeed
+          workspaceId={workspaceId}
+          selectedSignalId={selectedSignalId}
+          onSelectSignal={setSelectedSignalId}
+        />
 
         <section
           className="min-w-0 flex-1 overflow-y-auto p-[var(--space-4)]"
@@ -157,12 +143,7 @@ export function PulseScreen() {
           )}
         </section>
 
-        <aside
-          className="flex w-[var(--size-action)] shrink-0 flex-col overflow-y-auto border-l border-[var(--color-border)] bg-[var(--color-surface)] p-[var(--space-4)]"
-          aria-label="AI action panel"
-        >
-          <ActionPanel signalId={selectedSignalId} />
-        </aside>
+        <ActionPanel signalId={selectedSignalId} />
       </div>
     </div>
   );
