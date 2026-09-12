@@ -398,6 +398,11 @@ export const run = action({
         recommendations,
       });
 
+      // Первый layout.build после assess ещё не видел recs. Второй прогон
+      // может взять RecommendationCards — иначе справа три карточки есть,
+      // а на холсте слот так и остаётся пустым.
+      await ctx.scheduler.runAfter(0, internal.layout.build, { signalId });
+
       return { recommendations };
     } catch (err) {
       const message = err instanceof Error ? err.message : "Recommend failed";

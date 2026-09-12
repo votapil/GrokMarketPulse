@@ -10,7 +10,7 @@ import {
   internalMutation,
   internalQuery,
 } from "./_generated/server";
-import { internal } from "./_generated/api";
+import { api, internal } from "./_generated/api";
 import { vAssessment, vCompanyContext, vLevel } from "./schema";
 import {
   callGrok,
@@ -524,6 +524,9 @@ export const run = action({
       // зависит от assessment. Отдельным заданием, чтобы не удлинять этот вызов
       // и чтобы падение layout не откатывало уже записанную оценку.
       await ctx.scheduler.runAfter(0, internal.layout.build, { signalId });
+      // Три рекомендации — отдельный кадр 0:30. Падение recommend не откатывает
+      // оценку; после записи recs recommend сам пересоберёт холст.
+      await ctx.scheduler.runAfter(0, api.recommend.run, { signalId });
 
       return {
         signalId,
