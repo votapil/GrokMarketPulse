@@ -42,22 +42,13 @@ function resolveBlockComponent(type: string) {
   return null;
 }
 
-/** Блоки ответа рисует тот же реестр, что и BlockRenderer: разметки от модели нет. */
+/** Блоки ответа рисует тот же реестр, что и холст: разметки от модели нет. */
 function MessageBlocks({ blocks }: { blocks: UiBlock[] }) {
-  if (blocks.length === 0) {
-    return null;
-  }
-
   return (
-    <div className="mt-[var(--space-3)] space-y-[var(--space-2)]">
-      {blocks.map((block) => {
-        const Component = resolveBlockComponent(block.type);
-        if (!Component) {
-          return <UnsupportedBlock key={block.id} type={String(block.type)} />;
-        }
-        return <Component key={block.id} block={block} />;
-      })}
-    </div>
+    <BlockList
+      blocks={blocks}
+      className="mt-[var(--space-3)] space-y-[var(--space-2)]"
+    />
   );
 }
 

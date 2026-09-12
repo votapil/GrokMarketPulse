@@ -56,6 +56,24 @@ function renderBlocks(blocks: UiBlock[]) {
   });
 }
 
+/**
+ * Готовый список блоков без обращения к Convex — для случаев, когда набор уже
+ * известен: блоки конкретного ответа ассистента в чате. Реестр тот же, поэтому
+ * разметки от модели по-прежнему нет.
+ */
+export function BlockList({
+  blocks,
+  className,
+}: {
+  blocks: UiBlock[];
+  className?: string;
+}) {
+  if (blocks.length === 0) {
+    return null;
+  }
+  return <div className={className}>{renderBlocks(blocks)}</div>;
+}
+
 export function BlockRenderer({ signalId }: BlockRendererProps) {
   const blocks = useLayoutBlocks(signalId);
 
