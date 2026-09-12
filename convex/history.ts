@@ -306,8 +306,11 @@ export const chatContext = internalQuery({
 
     const signals = await Promise.all(recent.map(toContextSignal));
 
-    const explicitFocus =
+    // Сигнал из другого воркспейса в контекст не пускаем.
+    const requested =
       focusSignalId === null ? null : await ctx.db.get("signals", focusSignalId);
+    const explicitFocus =
+      requested && requested.workspaceId === workspaceId ? requested : null;
     const focus = explicitFocus
       ? await toContextSignal(explicitFocus)
       : (signals[0] ?? null);
