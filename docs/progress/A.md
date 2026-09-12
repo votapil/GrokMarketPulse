@@ -77,3 +77,10 @@ S-1 на api.workspace.setupWatchlist — подтверждаю. Провери
 Занятые файлы A: convex/layout.ts chat.ts uiEvents.ts history.ts assess.ts,
 src/components/blocks/**, ChatPanel.tsx CompanyBar.tsx ActionPanel.tsx,
 src/screens/PulseScreen.tsx.
+
+T-21 принято — Generate rec_3 вживую открыл
+`/artifact/j97841kcjt206vrj7sdtq4e1zn8e8eby`, лендинг спорит с AcmeFlow $39
+против нашего Pro $45. PLAN.md не трогал.
+
+Репетиция §1 ×3: рецепт и таблица в `docs/DEMO.md`.
+T-23 / T-35 от B ещё нет — T-24 и T-40 не начинал.
