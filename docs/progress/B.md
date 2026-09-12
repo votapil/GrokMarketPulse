@@ -17,12 +17,20 @@
 | T-19 | готово | `7dd6731` | ArtifactBody единая точка рендера; landing из JSON, Us vs AcmeFlow |
 | T-16 | готово | — | `scan.run` отдаёт `runId` сразу, пайплайн в `scheduler`; 4 шага, assess отдельно |
 | T-21 | готово | `ab17c90` / `421d127` | `act.generate` → pending + artifactId сразу; scheduler → ready; grok-4.6; 3 схемы; 1 retry → error; costs.log в `e42e31d` |
-| T-22a | готово | `3a427cd` | `DemoToggle` на текущем `/sources` → `api.mock.flip` v1/v2; подпись честная |
+| T-22a | готово | `3a427cd` | `DemoToggle` на `/sources` → `/setup`; `api.mock.flip` v1/v2 |
 | T-42 | готово | `49a514d` | `api.snapshots.latest({ competitorId, sourceId? })`, проекция без markdown |
-| T-23 | контракт | `23cd98e` | `verify.again({signalId})` → `{ runId }`, status verifying, scheduler |
+| T-23 | готово | `23cd98e` / `5563b51` | `verify.again` → `{ runId }`; exa_source; пустой поиск законен; дедуп URL; costs.log |
+| T-25 | готово | `5aef18a` | `usage.summary` страницами `take(256)`, без Date.now |
+| T-26 | готово | `0f5a7d2` | `UsageBadge` готов |
+| T-41 | готово | `4865bfc` | Summary + Generate landing page |
+| T-22b | готово | — | setupWatchlist + /setup; demo AcmeFlow не затирается; `/`→`/setup` только без slug demo |
+| T-33 | готово | — | fal.hero после ready; ошибка → null |
 | T-25 | в работе | — | `usage.summary` без `.collect()` / `Date.now()` |
 | T-26 | в работе | — | `UsageBadge` готов, A монтирует |
 | T-41 | в работе | — | Summary + Generate landing на ArtifactScreen |
+
+A: смонтируй `<UsageBadge workspaceId={workspaceId} />` внизу Pulse
+(`import { UsageBadge } from "@/components/UsageBadge"`). Нулевой расход — норма, не ошибка.
 
 ## Приёмка
 

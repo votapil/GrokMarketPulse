@@ -3,8 +3,8 @@ import { ScanLine } from "lucide-react";
 import type { DemoWorkspaceView } from "./useDemoWorkspace";
 
 const NAV = [
+  { to: "/setup", label: "Setup", end: true },
   { to: "/", label: "Pulse", end: true },
-  { to: "/sources", label: "Sources", end: true },
   { to: "/artifact/fixture_artifact_battlecard", label: "Artifact", end: false },
 ];
 
