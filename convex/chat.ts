@@ -93,9 +93,10 @@ export const startExchange = internalMutation({
   args: {
     workspaceId: v.id("workspaces"),
     text: v.string(),
+    signalId: v.optional(v.id("signals")),
   },
   returns: v.object({ messageId: v.id("chatMessages") }),
-  handler: async (ctx, { workspaceId, text }) => {
+  handler: async (ctx, { workspaceId, text, signalId }) => {
     const now = Date.now();
 
     await ctx.db.insert("chatMessages", {
@@ -110,7 +111,7 @@ export const startExchange = internalMutation({
     const messageId = await queueAssistantTurn(ctx, {
       workspaceId,
       createdAt: now + 1,
-      focusSignalId: null,
+      focusSignalId: signalId ?? null,
       hint: "Answer the last user message.",
     });
 
@@ -178,7 +179,8 @@ Block rules:
 - You choose WHICH blocks appear. You never choose their content, markup or styling.
 - Never pick a block whose data is missing: no recommendations -> no RecommendationCards,
   no artifact -> no ActionPreview, no price history -> no Timeline and no Chart.
-- An empty blocks array is a valid answer for a purely conversational reply.`;
+- If a signal is in focus, pick at least one of DiffView or MetricCards.
+- An empty blocks array is allowed only when the context has no signal at all.`;
 
 export const CHAT_JSON_SCHEMA = {
   type: "object",
@@ -252,7 +254,33 @@ function composeChatBlocks(
     ];
   });
 
-  return composeBlocks(entries, MAX_CHAT_BLOCKS);
+  const composed = composeBlocks(entries, MAX_CHAT_BLOCKS);
+  if (composed.length > 0 || !fallback) {
+    return composed;
+  }
+
+  // Чип «Why is this High?» обязан вернуть блоки, даже если модель отдала [].
+  return composeBlocks(
+    [
+      {
+        type: "MetricCards",
+        refs: {
+          signalId: fallback.signalId as string,
+          competitorId: fallback.competitorId as string,
+          artifactId: fallback.artifactId as string | null,
+        },
+      },
+      {
+        type: "DiffView",
+        refs: {
+          signalId: fallback.signalId as string,
+          competitorId: fallback.competitorId as string,
+          artifactId: fallback.artifactId as string | null,
+        },
+      },
+    ],
+    MAX_CHAT_BLOCKS,
+  );
 }
 
 function buildChatInput(context: ChatContext, hint: string): string {
@@ -325,6 +353,7 @@ export const ask = action({
   args: {
     workspaceId: v.id("workspaces"),
     text: v.string(),
+    signalId: v.optional(v.id("signals")),
   },
   returns: v.object({ messageId: v.id("chatMessages") }),
   handler: async (ctx, args): Promise<{ messageId: Id<"chatMessages"> }> => {

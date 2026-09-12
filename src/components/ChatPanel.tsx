@@ -2,7 +2,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useAction, useQuery } from "convex/react";
 import { MessageSquare, RefreshCw, Send } from "lucide-react";
 import { api } from "../../convex/_generated/api";
-import type { Doc } from "../../convex/_generated/dataModel";
+import type { Doc, Id } from "../../convex/_generated/dataModel";
 import { BlockList } from "@/components/blocks/BlockRenderer";
 import type { UiBlock } from "@/lib/types";
 import { cn } from "@/lib/utils";
@@ -135,7 +135,7 @@ function ChatError({
   );
 }
 
-export function ChatPanel() {
+export function ChatPanel({ signalId }: { signalId?: Id<"signals"> | null }) {
   const demo = useQuery(api.workspace.demo);
   const workspaceId = demo?.workspace._id;
 
@@ -209,7 +209,11 @@ export function ChatPanel() {
       setFailure(null);
       setDraft("");
 
-      void ask({ workspaceId, text })
+      void ask({
+        workspaceId,
+        text,
+        ...(signalId ? { signalId } : {}),
+      })
         .catch((error: unknown) => {
           const message =
             error instanceof Error ? error.message : "Chat request failed";
@@ -221,7 +225,7 @@ export function ChatPanel() {
           inputRef.current?.focus();
         });
     },
-    [ask, isBusy, workspaceId],
+    [ask, isBusy, signalId, workspaceId],
   );
 
   const isEmptyThread =

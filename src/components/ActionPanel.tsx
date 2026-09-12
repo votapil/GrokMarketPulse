@@ -242,7 +242,13 @@ function ErrorPanel({
  * ChatPanel живёт здесь, а не в ветках ниже, — он нужен во всех состояниях
  * панели (нет сигнала / скелетон / ошибка), чипы видны сразу.
  */
-function PanelShell({ children }: { children: React.ReactNode }) {
+function PanelShell({
+  children,
+  signalId,
+}: {
+  children: React.ReactNode;
+  signalId: Id<"signals"> | null;
+}) {
   return (
     <aside
       className="flex min-h-0 w-[var(--size-action)] shrink-0 flex-col border-l border-[var(--color-border)] bg-[var(--color-bg)]"
@@ -251,7 +257,7 @@ function PanelShell({ children }: { children: React.ReactNode }) {
       <div className="flex min-h-0 flex-1 flex-col gap-[var(--space-4)] overflow-y-auto p-[var(--space-4)]">
         {children}
       </div>
-      <ChatPanel />
+      <ChatPanel signalId={signalId} />
     </aside>
   );
 }
@@ -282,7 +288,7 @@ export function ActionPanel({ signalId }: ActionPanelProps) {
 
   if (!signalId) {
     return (
-      <PanelShell>
+      <PanelShell signalId={signalId}>
         <p className="text-[14px] text-[var(--color-text-muted)]">
           Select a signal to see assessment
         </p>
@@ -292,7 +298,7 @@ export function ActionPanel({ signalId }: ActionPanelProps) {
 
   if (data === undefined) {
     return (
-      <PanelShell>
+      <PanelShell signalId={signalId}>
         <AssessingSkeleton signalId={signalId} />
       </PanelShell>
     );
@@ -300,7 +306,7 @@ export function ActionPanel({ signalId }: ActionPanelProps) {
 
   if (data === null) {
     return (
-      <PanelShell>
+      <PanelShell signalId={signalId}>
         <p className="text-[14px] text-[var(--color-text-muted)]">Signal not found</p>
       </PanelShell>
     );
@@ -314,7 +320,7 @@ export function ActionPanel({ signalId }: ActionPanelProps) {
 
   if (isError) {
     return (
-      <PanelShell>
+      <PanelShell signalId={signalId}>
         <ErrorPanel
           message={
             retryError ??
@@ -330,7 +336,7 @@ export function ActionPanel({ signalId }: ActionPanelProps) {
 
   if (isAssessing) {
     return (
-      <PanelShell>
+      <PanelShell signalId={signalId}>
         <AssessingSkeleton signalId={signalId} />
       </PanelShell>
     );
@@ -340,7 +346,7 @@ export function ActionPanel({ signalId }: ActionPanelProps) {
     signal.recommendations.length === 0 ? "empty" : "ready";
 
   return (
-    <PanelShell>
+    <PanelShell signalId={signalId}>
       {isLowConfidence ? <LowConfidenceBanner confidence={signal.confidence} /> : null}
 
       {signal.assessment ? (
