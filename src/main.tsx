@@ -12,7 +12,8 @@ ReactDOM.createRoot(document.getElementById("root")!).render(
   <React.StrictMode>
     <ErrorBoundary>
       <ConvexProvider client={convex}>
-        <BrowserRouter>
+        {/* BASE_URL is "/" locally and on Render, "/GrokMarketPulse/" on GitHub Pages. */}
+        <BrowserRouter basename={import.meta.env.BASE_URL}>
           <App />
         </BrowserRouter>
       </ConvexProvider>
