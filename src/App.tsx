@@ -5,8 +5,7 @@ import { PulseScreen } from "@/screens/PulseScreen";
 import { SourcesScreen } from "@/screens/SourcesScreen";
 
 /**
- * App routes. Entry: main.tsx. `/` mounts track A PulseScreen (B T-05 left TODO;
- * A fills it as part of T-15 contract after handoff).
+ * App routes. Entry: main.tsx. `/` mounts track A PulseScreen.
  */
 export default function App() {
   return (
