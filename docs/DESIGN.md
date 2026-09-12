@@ -12,13 +12,13 @@
 
 | Канвас | `data-node-id` | Роль в демо |
 |---|---|---|
-| **Page - Shell** | `per` | Pulse `/`, кадр 0:00–0:10: три панели, шапка, **одна** кнопка Run Scan, слоты под блоки A |
-| **Page - Artifact** | `gaz` | `/artifact/:id`: battlecard + offer слева, landing preview в безеле |
-| **Page - Sources** | `hip` | `/sources`: предзаполненный watchlist + тумблер Simulate competitor edit |
-| **Page - Landing** | `bag` | Финальный кадр демо: сгенерированная страница Helpdesk AI. Самый проработанный |
-| **State Loading Skeleton** | `lie` | Общий loading: шаги скана, не спиннер |
-| **State Empty Workspace** | `gil` | Общий empty: No signals yet → Run Scan |
-| **State Error Scan Failed** | `dos` | Общий error: Scan did not finish → Retry scan |
+| **Page - Shell** | `and` | Pulse `/`, кадр 0:00–0:10: три панели, шапка, **одна** кнопка Run Scan, слоты под блоки A |
+| **Page - Artifact** | `any` | `/artifact/:id`: battlecard + offer слева, landing preview в безеле |
+| **Page - Sources** | `hop` | `/sources`: предзаполненный watchlist + тумблер Simulate competitor edit |
+| **Page - Landing** | `iii` | Финальный кадр демо: сгенерированная страница Helpdesk AI. Самый проработанный |
+| **State Loading Skeleton** | `kit` | Общий loading: шаги скана, не спиннер |
+| **State Empty Workspace** | `eve` | Общий empty: No signals yet → Run Scan |
+| **State Error Scan Failed** | `bud` | Общий error: Scan did not finish → Retry scan |
 
 Артборды `Block/*` и `Panel/Chat` рисует дорожка A в T-37 на **этом же файле**. Токены не переопределять.
 
@@ -125,7 +125,7 @@ Landing (артефакт для клиента) инвертирует земл
 
 ## Скелетоны
 
-Не спиннер в пустоте. Шаги скана зажигаются по одному (артборд `lie`):
+Не спиннер в пустоте. Шаги скана зажигаются по одному (артборд `kit`):
 
 1. `Firecrawl: fetching pricing page` — зелёный LED (идёт / готов)
 2. `Diffing snapshots` — янтарный LED
@@ -137,14 +137,14 @@ Landing (артефакт для клиента) инвертирует земл
 
 ## Три состояния по экранам
 
-Примитивы — артборды `lie` / `gil` / `dos`. T-05 кладёт их в `src/components/state/` (`Skeleton`, `EmptyState`, `ErrorState`).
+Примитивы — артборды `kit` / `eve` / `bud`. T-05 кладёт их в `src/components/state/` (`Skeleton`, `EmptyState`, `ErrorState`).
 
 | Экран | loading | empty | error |
 |---|---|---|---|
-| **Shell / Pulse** | `lie`: шаги скана в центре, фид не прыгает | `gil`: «No signals yet» + Run Scan | `dos`: 402/timeout Firecrawl + Retry scan |
-| **Artifact** | скелетон безеля (те же полоски, что `lie`) | empty: «Generate an artifact from a recommendation» + ссылка на Pulse | error: «Grok did not return JSON» + Retry |
+| **Shell / Pulse** | `kit`: шаги скана в центре, фид не прыгает | `eve`: «No signals yet» + Run Scan | `bud`: 402/timeout Firecrawl + Retry scan |
+| **Artifact** | скелетон безеля (те же полоски, что `kit`) | empty: «Generate an artifact from a recommendation» + ссылка на Pulse | error: «Grok did not return JSON» + Retry |
 | **Sources** | 2 skeleton-ряда списка | empty не в демо (воркспейс предзаполнен); если случится — «Add a page to watch» | error: URL не открылся, `metadata.statusCode` + Retry |
-| **Landing** (превью) | бумага в безеле без текста, CTA-плейсхолдер | не рисуем пустой лендинг — слот «preview after Generate» | та же `dos` внутри безеля: «Preview failed» |
+| **Landing** (превью) | бумага в безеле без текста, CTA-плейсхолдер | не рисуем пустой лендинг — слот «preview after Generate» | та же `bud` внутри безеля: «Preview failed» |
 
 Копирайт empty/error конкретный, без «Oops» и без кодов в одиночку.
 
