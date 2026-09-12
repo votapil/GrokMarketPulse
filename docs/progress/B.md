@@ -23,7 +23,9 @@
 - T-14 принято (`4c1ad1a`) — snapshot-контракт B цел; замечания A (public `purgeBySource`, leftover `$`, concurrent insert) не блок
 - T-18 принято (`dac887a`) — только `assess.ts`; Pro $45, scoreExplanation, low_confidence
 - T-15 App `/` принято (`8f8461f`) — A сама повесила `PulseScreen`
-- T-15 `PulseScreen` возврат: двойные `<aside>` вокруг `SignalsFeed` и `ActionPanel` (заголовки + ширина/скролл) — правит A
+- T-15 Run Scan принято (`13c0460`) — CTA/progress; B-файлы не тронуты
+- T-15 `PulseScreen` возврат: двойные `<aside>` вокруг `SignalsFeed` и `ActionPanel` всё ещё на месте
+- T-20 принято (`781bde0`) — только `recommend.ts`
 
 ## Точки стыка с A
 
