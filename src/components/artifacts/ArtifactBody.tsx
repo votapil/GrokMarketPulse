@@ -12,15 +12,72 @@ export type ArtifactPayload =
 export type ArtifactLike = {
   payload: ArtifactPayload;
   heroImageUrl?: string | null;
+  status?: "pending" | "ready" | "error";
 };
+
+function LandingSectionSkeleton({ compact = false }: { compact?: boolean }) {
+  const pad = compact ? "p-[var(--space-4)]" : "p-[var(--space-8)]";
+  const hero = compact ? "h-24" : "h-40";
+
+  return (
+    <div
+      role="status"
+      aria-live="polite"
+      aria-busy="true"
+      aria-label="Writing landing page sections"
+      className={`flex flex-col gap-[var(--space-6)] overflow-hidden rounded-[var(--radius-md)] border border-[var(--color-border)] bg-[var(--color-surface)] ${pad}`}
+    >
+      <div
+        aria-hidden="true"
+        className={`${hero} w-full animate-pulse rounded-[var(--radius-md)] bg-[var(--color-border)]`}
+      />
+      <div
+        aria-hidden="true"
+        className="h-8 w-3/4 animate-pulse rounded-[var(--radius-md)] bg-[var(--color-border)]"
+      />
+      <div
+        aria-hidden="true"
+        className="h-4 w-full max-w-[72ch] animate-pulse rounded-[var(--radius-md)] bg-[var(--color-border)]"
+      />
+      <div className="grid gap-[var(--space-4)] md:grid-cols-2">
+        <div
+          aria-hidden="true"
+          className="h-24 animate-pulse rounded-[var(--radius-md)] border border-[var(--color-border)] bg-[var(--color-bg)]"
+        />
+        <div
+          aria-hidden="true"
+          className="h-24 animate-pulse rounded-[var(--radius-md)] border border-[var(--color-border)] bg-[var(--color-bg)]"
+        />
+      </div>
+      <div
+        aria-hidden="true"
+        className="flex flex-col gap-[var(--space-2)]"
+      >
+        <div className="h-4 w-1/3 animate-pulse rounded-[var(--radius-md)] bg-[var(--color-border)]" />
+        <div className="h-10 w-full animate-pulse rounded-[var(--radius-md)] bg-[var(--color-border)]" />
+        <div className="h-10 w-full animate-pulse rounded-[var(--radius-md)] bg-[var(--color-border)]" />
+      </div>
+      <div
+        aria-hidden="true"
+        className="h-12 w-48 animate-pulse rounded-[var(--radius-md)] bg-[var(--color-accent)]"
+      />
+    </div>
+  );
+}
 
 export function ArtifactBody({
   artifact,
   compact = false,
+  pending = false,
 }: {
   artifact?: ArtifactLike | null;
   compact?: boolean;
+  pending?: boolean;
 }) {
+  if (pending || artifact?.status === "pending") {
+    return <LandingSectionSkeleton compact={compact} />;
+  }
+
   if (!artifact || artifact.payload.type === "empty") {
     return (
       <EmptyState
