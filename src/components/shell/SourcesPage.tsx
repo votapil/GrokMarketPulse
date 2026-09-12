@@ -1,5 +1,6 @@
 import { useSearchParams } from "react-router-dom";
 import { fixtureCompetitor, fixtureSource } from "@/lib/fixtures";
+import { DemoToggle } from "@/components/DemoToggle";
 import { EmptyState } from "@/components/state/EmptyState";
 import { ErrorState } from "@/components/state/ErrorState";
 import { Skeleton } from "@/components/state/Skeleton";
@@ -14,6 +15,7 @@ export function SourcesPage() {
         <div className="h-12 rounded-[var(--radius-md)] border border-dashed border-[var(--color-border)]" />
         <div className="h-12 rounded-[var(--radius-md)] border border-dashed border-[var(--color-border)]" />
         <Skeleton label="Loading watchlist" />
+        <DemoToggle />
       </div>
     );
   }
@@ -26,6 +28,7 @@ export function SourcesPage() {
           body="Firecrawl could not fetch the pricing page. Check metadata.statusCode and retry."
           actionLabel="Retry"
         />
+        <DemoToggle />
       </div>
     );
   }
@@ -37,6 +40,7 @@ export function SourcesPage() {
           title="Add a page to watch"
           body="The demo workspace ships with AcmeFlow pricing. Add a URL if the list is empty."
         />
+        <DemoToggle />
       </div>
     );
   }
@@ -48,8 +52,9 @@ export function SourcesPage() {
         {fixtureCompetitor.name} · {fixtureSource.label}
       </p>
       <p className="mt-[var(--space-2)] text-[14px] text-[var(--color-text)]">
-        Watchlist is prefilled. Simulate competitor edit arrives in T-22.
+        Watchlist is prefilled. Flip the fixture, then Run Scan on Pulse.
       </p>
+      <DemoToggle />
     </div>
   );
 }

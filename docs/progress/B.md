@@ -17,9 +17,20 @@
 | T-19 | готово | `7dd6731` | ArtifactBody единая точка рендера; landing из JSON, Us vs AcmeFlow |
 | T-16 | готово | — | `scan.run` отдаёт `runId` сразу, пайплайн в `scheduler`; 4 шага, assess отдельно |
 | T-21 | готово | `ab17c90` / `421d127` | `act.generate` → pending + artifactId сразу; scheduler → ready; grok-4.6; 3 схемы; 1 retry → error; costs.log в `e42e31d` |
+| T-22a | готово | — | `DemoToggle` на текущем `/sources` → `api.mock.flip` v1/v2; подпись честная |
+| T-42 | код готов, не в git / не на деплое | — | `api.snapshots.latest({ competitorId, sourceId? })`, проекция без markdown. Сигнатура шире §3.2 — так просил A для FeatureMatrix |
+| T-23 | черновик локально, не деплоить | — | `exa.ts` + `verify.ts`; `api.verify.again`. Ждёт после T-22a. Правку `ActionPanel` (зона A) откатил |
+| T-25 | в работе | — | `usage.summary` без `.collect()` / `Date.now()` |
+| T-26 | в работе | — | `UsageBadge` готов, A монтирует |
+| T-41 | в работе | — | Summary + Generate landing на ArtifactScreen |
 
 ## Приёмка
 
+- T-20 / T-27 принято (`eecdf0f`) — assess ставит `recommend.run`, после recs холст пересобирается
+- T-39 принято (`326c2ba`) — `restoreDemoContext` возвращает Helpdesk Pro $45
+- T-15 принято (`294acdf`) — фикстурный signalId больше не роняет Pulse
+- T-32 принято (`c76b6f4`) — layout всегда ставит DataGrid
+- T-29 / T-30 принято (`006ad19`) — чип Why is this High отдаёт блоки и фокус сигнала
 - T-02 принято
 - T-09 / T-11 / T-07 / T-13 — приняты по сборке: `npm run build` зелёный после rebase на `6fae8ca`
 - T-14 принято (`4c1ad1a`) — snapshot-контракт B цел; замечания A (public `purgeBySource`, leftover `$`, concurrent insert) не блок
@@ -95,8 +106,8 @@ B берёт это на себя в `T-22`: `setupWatchlist` создаёт к�
 | `convex/prompts/artifacts.ts` | B | T-21 закрыта |
 | `convex/artifacts.ts` | B | T-21 закрыта (только get/bySignal) |
 | `convex/costs.ts` | B | кусок T-25 уже в `e42e31d`; остаток — `usage.summary` |
-| `convex/snapshots.ts` | B, агент | T-42 |
-| `convex/exa.ts`, `convex/verify.ts` | B, агент | T-23 черновик |
+| `convex/snapshots.ts` | B | T-42 код на месте — не `convex dev` до явного пуша |
+| `convex/exa.ts`, `convex/verify.ts` | B | T-23 черновик припаркован до T-22 |
 
 **Замок на деплой.** Общий `pleasant-bandicoot-600`: `npx convex dev` пушит всё рабочее
 дерево целиком, поэтому пушит только оркестратор и только `--once` после зелёного
