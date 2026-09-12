@@ -18,7 +18,49 @@ export default {
       },
     },
     extend: {
+      fontFamily: {
+        sans: ["var(--font-sans)", "sans-serif"],
+        mono: ["var(--font-mono)", "monospace"],
+      },
+      fontWeight: {
+        regular: "var(--weight-regular)",
+        medium: "var(--weight-medium)",
+        bold: "var(--weight-bold)",
+        black: "var(--weight-black)",
+      },
+      spacing: {
+        1: "var(--space-1)",
+        2: "var(--space-2)",
+        3: "var(--space-3)",
+        4: "var(--space-4)",
+        6: "var(--space-6)",
+        8: "var(--space-8)",
+      },
+      borderRadius: {
+        sm: "var(--radius-sm)",
+        md: "var(--radius-md)",
+        lg: "var(--radius-lg)",
+      },
+      width: {
+        feed: "var(--size-feed)",
+        action: "var(--size-action)",
+      },
+      height: {
+        header: "var(--size-header)",
+      },
       colors: {
+        chassis: "var(--palette-chassis)",
+        panel: "var(--palette-panel)",
+        recessed: "var(--palette-recessed)",
+        ok: "var(--palette-ok)",
+        amber: "var(--palette-amber)",
+        info: "var(--palette-info)",
+        paper: "var(--palette-paper)",
+        ink: "var(--palette-ink)",
+        "severity-low": "var(--severity-low)",
+        "severity-medium": "var(--severity-medium)",
+        "severity-high": "var(--severity-high)",
+        "severity-critical": "var(--severity-critical)",
         border: "hsl(var(--border))",
         input: "hsl(var(--input))",
         ring: "hsl(var(--ring))",
@@ -52,11 +94,6 @@ export default {
           DEFAULT: "hsl(var(--card))",
           foreground: "hsl(var(--card-foreground))",
         },
-      },
-      borderRadius: {
-        lg: "var(--radius)",
-        md: "calc(var(--radius) - 2px)",
-        sm: "calc(var(--radius) - 4px)",
       },
       keyframes: {
         "accordion-down": {

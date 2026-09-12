@@ -1,16 +1,18 @@
-import { Chat } from "@/Chat/Chat";
-import { ChatIntro } from "@/Chat/ChatIntro";
-import { randomName } from "@/Chat/randomName";
-import { Layout } from "@/Layout";
-import { UserMenu } from "@/components/UserMenu";
-import { useState } from "react";
+import { Navigate, Route, Routes } from "react-router-dom";
+import { AppShell } from "@/components/shell/AppShell";
+import { ArtifactPage } from "@/components/shell/ArtifactPage";
+import { PulsePage } from "@/components/shell/PulsePage";
+import { SourcesPage } from "@/components/shell/SourcesPage";
 
 export default function App() {
-  const [viewer] = useState(randomName());
   return (
-    <Layout menu={<UserMenu>{viewer}</UserMenu>}>
-      <ChatIntro />
-      <Chat viewer={viewer} />
-    </Layout>
+    <Routes>
+      <Route element={<AppShell />}>
+        <Route path="/" element={<PulsePage />} />
+        <Route path="/artifact/:artifactId" element={<ArtifactPage />} />
+        <Route path="/sources" element={<SourcesPage />} />
+        <Route path="*" element={<Navigate to="/" replace />} />
+      </Route>
+    </Routes>
   );
 }

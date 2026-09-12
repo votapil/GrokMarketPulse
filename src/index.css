@@ -2,69 +2,76 @@
 @tailwind components;
 @tailwind utilities;
 
-/* To change the theme colors, change the values below
-  or use the "Copy code" button at https://ui.shadcn.com/themes */
 @layer base {
   :root {
-    --background: 0 0% 100%;
-    --foreground: 20 14.3% 4.1%;
+    --palette-chassis: #1a1f24;
+    --palette-panel: #242b32;
+    --palette-recessed: #12161a;
+    --palette-text: #e8eef2;
+    --palette-muted: #a8b2c1;
+    --palette-accent: #ff4757;
+    --palette-amber: #f5a524;
+    --palette-info: #7eb6ff;
+    --palette-ok: #2ed573;
+    --palette-border: #3a4450;
+    --palette-critical: #ff2d55;
+    --palette-paper: #e0e5ec;
+    --palette-ink: #2d3436;
 
-    --card: 0 0% 100%;
-    --card-foreground: 20 14.3% 4.1%;
+    --color-bg: var(--palette-chassis);
+    --color-surface: var(--palette-panel);
+    --color-text: var(--palette-text);
+    --color-text-muted: var(--palette-muted);
+    --color-accent: var(--palette-accent);
+    --color-border: var(--palette-border);
 
-    --popover: 0 0% 100%;
-    --popover-foreground: 20 14.3% 4.1%;
+    --severity-low: var(--palette-info);
+    --severity-medium: var(--palette-amber);
+    --severity-high: var(--palette-accent);
+    --severity-critical: var(--palette-critical);
 
-    --primary: 24 9.8% 10%;
-    --primary-foreground: 60 9.1% 97.8%;
+    --font-sans: "IBM Plex Sans", sans-serif;
+    --font-mono: "JetBrains Mono", monospace;
+    --weight-regular: 400;
+    --weight-medium: 500;
+    --weight-bold: 700;
+    --weight-black: 800;
 
-    --secondary: 60 4.8% 95.9%;
-    --secondary-foreground: 24 9.8% 10%;
+    --space-1: 4px;
+    --space-2: 8px;
+    --space-3: 12px;
+    --space-4: 16px;
+    --space-6: 24px;
+    --space-8: 32px;
 
-    --muted: 60 4.8% 95.9%;
-    --muted-foreground: 25 5.3% 44.7%;
+    --radius-sm: 4px;
+    --radius-md: 8px;
+    --radius-lg: 16px;
 
-    --accent: 60 4.8% 95.9%;
-    --accent-foreground: 24 9.8% 10%;
+    --size-header: 56px;
+    --size-feed: 280px;
+    --size-action: 320px;
 
-    --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 60 9.1% 97.8%;
-
-    --border: 20 5.9% 90%;
-    --input: 20 5.9% 90%;
-    --ring: 20 14.3% 4.1%;
-
-    --radius: 0.5rem;
-  }
-
-  .dark {
-    --background: 20 14.3% 4.1%;
-    --foreground: 60 9.1% 97.8%;
-
-    --card: 20 14.3% 4.1%;
-    --card-foreground: 60 9.1% 97.8%;
-
-    --popover: 20 14.3% 4.1%;
-    --popover-foreground: 60 9.1% 97.8%;
-
-    --primary: 60 9.1% 97.8%;
-    --primary-foreground: 24 9.8% 10%;
-
-    --secondary: 12 6.5% 15.1%;
-    --secondary-foreground: 60 9.1% 97.8%;
-
-    --muted: 12 6.5% 15.1%;
-    --muted-foreground: 24 5.4% 63.9%;
-
-    --accent: 12 6.5% 15.1%;
-    --accent-foreground: 60 9.1% 97.8%;
-
-    --destructive: 0 62.8% 30.6%;
-    --destructive-foreground: 60 9.1% 97.8%;
-
-    --border: 12 6.5% 15.1%;
-    --input: 12 6.5% 15.1%;
-    --ring: 24 5.7% 82.9%;
+    --background: 210 15% 12%;
+    --foreground: 200 20% 93%;
+    --card: 210 14% 17%;
+    --card-foreground: 200 20% 93%;
+    --popover: 210 14% 17%;
+    --popover-foreground: 200 20% 93%;
+    --primary: 355 100% 64%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 210 14% 17%;
+    --secondary-foreground: 200 20% 93%;
+    --muted: 210 14% 17%;
+    --muted-foreground: 218 16% 71%;
+    --accent: 210 14% 17%;
+    --accent-foreground: 200 20% 93%;
+    --destructive: 355 100% 64%;
+    --destructive-foreground: 0 0% 100%;
+    --border: 214 16% 27%;
+    --input: 214 16% 27%;
+    --ring: 355 100% 64%;
+    --radius: 8px;
   }
 }
 
@@ -72,7 +79,17 @@
   * {
     @apply border-border;
   }
+
+  html,
+  body,
+  #root {
+    min-height: 100%;
+  }
+
   body {
-    @apply bg-background text-foreground;
+    background: var(--color-bg);
+    color: var(--color-text);
+    font-family: var(--font-sans);
+    font-weight: var(--weight-regular);
   }
 }
