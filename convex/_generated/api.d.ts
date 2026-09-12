@@ -8,7 +8,30 @@
  * @module
  */
 
-import type * as messages from "../messages.js";
+import type * as act from "../act.js";
+import type * as artifacts from "../artifacts.js";
+import type * as assess from "../assess.js";
+import type * as chat from "../chat.js";
+import type * as costs from "../costs.js";
+import type * as detect from "../detect.js";
+import type * as exa from "../exa.js";
+import type * as firecrawl from "../firecrawl.js";
+import type * as history from "../history.js";
+import type * as layout from "../layout.js";
+import type * as mock from "../mock.js";
+import type * as onboarding from "../onboarding.js";
+import type * as prompts_artifacts from "../prompts/artifacts.js";
+import type * as prompts_reasoning from "../prompts/reasoning.js";
+import type * as recommend from "../recommend.js";
+import type * as runs from "../runs.js";
+import type * as scan from "../scan.js";
+import type * as seed from "../seed.js";
+import type * as signals from "../signals.js";
+import type * as snapshots from "../snapshots.js";
+import type * as uiEvents from "../uiEvents.js";
+import type * as usage from "../usage.js";
+import type * as verify from "../verify.js";
+import type * as workspace from "../workspace.js";
 
 import type {
   ApiFromModules,
@@ -17,7 +40,30 @@ import type {
 } from "convex/server";
 
 declare const fullApi: ApiFromModules<{
-  messages: typeof messages;
+  act: typeof act;
+  artifacts: typeof artifacts;
+  assess: typeof assess;
+  chat: typeof chat;
+  costs: typeof costs;
+  detect: typeof detect;
+  exa: typeof exa;
+  firecrawl: typeof firecrawl;
+  history: typeof history;
+  layout: typeof layout;
+  mock: typeof mock;
+  onboarding: typeof onboarding;
+  "prompts/artifacts": typeof prompts_artifacts;
+  "prompts/reasoning": typeof prompts_reasoning;
+  recommend: typeof recommend;
+  runs: typeof runs;
+  scan: typeof scan;
+  seed: typeof seed;
+  signals: typeof signals;
+  snapshots: typeof snapshots;
+  uiEvents: typeof uiEvents;
+  usage: typeof usage;
+  verify: typeof verify;
+  workspace: typeof workspace;
 }>;
 
 /**
