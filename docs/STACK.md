@@ -986,7 +986,7 @@ MCP работает в обе стороны: агент читает данн�
 
 #### Воркфлоу на день
 
-1. Аккаунт на app.wonder.so, создать файл-канвас, подключить MCP, пройти OAuth (~20 мин).
+1. Аккаунт на app.wonder.so, открыть **единственный** канвас команды [GrokMarketPulse](https://app.wonder.so/votapil/files/01a09523-7468-73ca-9838-1f163930bf0d/branches/main/pages/01a09523-7469-7d1a-93cb-ca004af7f12e) (не создавать второй файл), подключить MCP, пройти OAuth (~20 мин).
 2. Задать систему. Если код уже есть:
    > `Read my Tailwind config and create a design in Wonder using my exact colors, typography, and spacing.`
 

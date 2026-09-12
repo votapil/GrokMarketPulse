@@ -21,6 +21,16 @@ Hackathon app: live market pulse from the web (Exa + Firecrawl) scored by Grok, 
 - `docs/STACK.md` — sponsor APIs, credits, MCP, gotchas
 - Skill `.cursor/skills/hackathon-stack/SKILL.md`
 
+
+## Wonder (один канвас)
+
+Единственный файл команды: **GrokMarketPulse**
+
+https://app.wonder.so/votapil/files/01a09523-7468-73ca-9838-1f163930bf0d/branches/main/pages/01a09523-7469-7d1a-93cb-ca004af7f12e
+
+- `fileId` `01a09523-7468-73ca-9838-1f163930bf0d` · `pageId` `01a09523-7469-7d1a-93cb-ca004af7f12e` · org `votapil`
+- Не заводить второй канвас; токены в `docs/DESIGN.md`, блоки A в `docs/DESIGN-BLOCKS.md`
+
 ## Local secrets
 
 ```bash

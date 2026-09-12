@@ -1,10 +1,10 @@
-# DESIGN.md — визуальный язык Market Pulse
+# DESIGN.md — визуальный язык GrokMarketPulse
 
-**Файл Wonder:** [Market Pulse](https://app.wonder.so) — орг. `nikita-volker` / nikita-khitiaev, `fileId` `01a09579-ffc9-7c3f-b450-6c10f1fd75d1`, артборды дорожки B на **Page 2** (`pageId` `01a09591-62bf-7409-85c8-59fa6ae590f8`). Онбординг на Page 1 не трогать. Открыть файл в аккаунте команды (один канвас, второй не заводить).
+**Файл Wonder (один на команду):** [GrokMarketPulse](https://app.wonder.so/votapil/files/01a09523-7468-73ca-9838-1f163930bf0d/branches/main/pages/01a09523-7469-7d1a-93cb-ca004af7f12e) — орг. `votapil`, `fileId` `01a09523-7468-73ca-9838-1f163930bf0d`, `pageId` `01a09523-7469-7d1a-93cb-ca004af7f12e`, ветка `main`.
 
-> Руками: если в header ещё «Welcome to Wonder» — Rename → **Market Pulse**. Подключить GitHub: header → GitHub → Wonder GitHub App → `votapil/GrokMarketPulse`. После подключения эта ссылка — канон для дорожки A (T-37).
+> Прежний канвас `nikita-volker` / «Market Pulse» (`01a09579-…`) **deprecated** — не открывать второй файл. Rename в Wonder: **GrokMarketPulse**. GitHub App → `votapil/GrokMarketPulse`. Артборды B (Shell / Artifact / Sources / Landing) и блоки A (`Block/*`, `Panel/Chat`) живут на **этом** канвасе.
 
-Скриншоты — сами артборды на канвасе Page 2 (зум Fit). Ниже — id корней и что на них видно.
+Скриншоты — артборды на канвасе (зум Fit). Ниже — id корней и что на них видно.
 
 ---
 
