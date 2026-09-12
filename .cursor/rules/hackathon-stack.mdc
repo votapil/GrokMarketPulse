@@ -1,0 +1,15 @@
+---
+description: GrokMarketPulse hackathon stack defaults
+alwaysApply: true
+---
+
+# Stack
+
+Details: `docs/STACK.md` and skill `hackathon-stack`.
+
+- Discovery/citations → **Exa**. Full page / JS / map → **Firecrawl**. Never crawl without `limit`.
+- LLM → xAI `POST /v1/responses`, key `XAI_API_KEY`. Convex actions use `fetch`; no `"use node"` for HTTP.
+- Convex: `ctx.db.get("table", id)`; no clocks in queries; no `ctx.db` in actions.
+- UI → Wonder, then paste React+Tailwind here.
+- Demo host → Render **static site** + `npx convex deploy --cmd 'npm run build'`.
+- Secrets only in `.env.local` and `npx convex env set`. Never commit keys.

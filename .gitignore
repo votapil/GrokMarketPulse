@@ -2,25 +2,26 @@
 .env
 .env.*
 !.env.example
+!.env.local.example
 
-# deps / build
+# deps and build
 node_modules/
 dist/
 build/
-.next/
-out/
+.output/
+.turbo/
+.vite/
+*.tsbuildinfo
 
-# convex
+# Convex local
 .convex/
 
-# misc
-.DS_Store
+# logs and OS
 *.log
+npm-debug.log*
+.DS_Store
+Thumbs.db
 
-# agent/MCP configs — these accrete live API keys (see docs/STACK.md: Render
-# embeds "Authorization: Bearer <RENDER_API_KEY>" inline). Repo is PUBLIC.
-.claude/settings.local.json
-.cursor/mcp.json
-.mcp.json
-*.pem
-*.key
+# python
+__pycache__/
+*.pyc
