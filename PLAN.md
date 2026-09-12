@@ -109,12 +109,12 @@ docs/START.md                                 ← с чего начинать, 
 
 ## 1. Демо-сценарий (90 секунд, по шагам)
 
-Три экрана: **Pulse** (`/`), **Artifact** (`/artifact/:id`), **Sources** (`/sources`). Демо целиком проходит на Pulse → Artifact.
+Три экрана: **Pulse** (`/`), **Artifact** (`/artifact/:id`), **Setup** (`/setup`). Демо целиком проходит на Pulse → Artifact.
 
 | Время | Что делает человек | Что на экране |
 |---|---|---|
 | 0:00–0:10 | Ничего. Открыт `/`. | Экран **не пустой**: слева фид из 2 сигналов (один `resolved` — «AcmeFlow added Slack integration», один свежий), сверху плашка «Helpdesk AI · Pro $45 · SMB». Одна заметная кнопка **Run Scan**. Ценность читается сразу: *Your competitor moved.* |
-| 0:10–0:15 | Говорит «конкурент только что поправил прайсинг» и жмёт **Run Scan**. | (за 10 секунд до этого — тумблер `Simulate competitor edit` на `/sources`, он переключил мок-сайт v1 → v2). |
+| 0:10–0:15 | Говорит «конкурент только что поправил прайсинг» и жмёт **Run Scan**. | (за 10 секунд до этого — тумблер `Simulate competitor edit` на `/setup`, он переключил мок-сайт v1 → v2). |
 | 0:15–0:35 | Ждёт. | Пошаговый прогресс, не спиннер: `Firecrawl: fetching pricing page` → `Diffing snapshots` → `Grok: filtering noise` → `Signal created`. Каждый шаг зажигается отдельно. |
 | 0:35–0:45 | Ничего. | Новый Signal **сам** появляется в фиде (Convex realtime, без перезагрузки). Центр: `SignalCard` + **`DiffView` $49 → $39** + `EvidenceCard` (URL, timestamp, фрагмент) + `MetricCards` (Threat **High**, score 82, confidence 91%, Price −20%). |
 | 0:45–0:55 | Жмёт **Verify with external sources**. | `SourceList` от Exa: 2 внешних ссылки с цитатами. Тезис вслух: «мы не верим одной странице». |
@@ -124,6 +124,33 @@ docs/START.md                                 ← с чего начинать, 
 
 Кликов до результата: **3** (Run Scan → Verify → Generate). Обязательных полей ввода на пути демо: **0**.
 
+### 1.1 Два входа в продукт: демо-путь и продуктовый путь
+
+Нулевой ввод выше — свойство **демо-пути**, а не всего продукта. У приложения два входа, и оба обязательны:
+
+| Вход | Кто им идёт | Где начинается | Ввод |
+|---|---|---|---|
+| **Демо-путь** | жюри на сцене, первое открытие ссылки | `/` (Pulse), воркспейс предзаполнен сидом | 0 полей, сразу Run Scan |
+| **Продуктовый путь** | любой человек, который хочет свой результат | `/setup`, экран intake | 2 контрола, оба предзаполнены демо-значениями |
+
+Продуктовый путь — это MVP-пункты 1–3 ТЗ и ровно то, ради чего продукт существует:
+
+```
+свой сайт + сайты конкурентов  →  Run Scan  →  короткое саммари «что изменилось / что менять»
+                                              +  готовая landing page как ответ на угрозу
+```
+
+Требования, из которых нельзя вычитать:
+
+- Intake — **первый** экран для пустого воркспейса: `/` редиректит на `/setup`, пока `company.contextStatus === "empty"`. Для предзаполненного демо-воркспейса редиректа нет — сцена не ломается.
+- Intake — **один** экран и **два** контрола: свой URL и список URL конкурентов. Никаких шагов, визардов и модалок (§2).
+- Выход пользователя — **два артефакта, не десять**: саммари на 2–3 строки и landing page. Дашборд из блоков — это *как* система пришла к выводу, а не результат. Саммари и лендинг обязаны читаться без дашборда.
+- Landing page **гарантирована**: она не должна зависеть от того, на какую из трёх рекомендаций пришёлся клик (§5, `T-41`).
+
+Открытый вопрос к обеим дорожкам: после ревизии артефакты уехали в волну 3, то есть на КТ-2
+продуктовый путь доходит только до саммари, а лендинг — до КТ-3. Для демо со сцены это рабочий
+размен; для продукта из §1.1 лендинг — не усиление, а сам выход. Решать на КТ-2.
+
 ---
 
 ## 2. Что не делаем (с причинами)
@@ -132,7 +159,7 @@ docs/START.md                                 ← с чего начинать, 
 |---|---|
 | Авторизация, регистрация, профиль, команды | ТЗ не требует, ломает «нулевой онбординг», съедает час |
 | Мультиворкспейс, переключатель воркспейсов | На демо один воркспейс, селектор — лишний клик |
-| Многошаговый онбординг-визард, туры, модалки подтверждения | Прямой запрет в правилах UX. Онбординг — один экран, предзаполненный, одна кнопка |
+| Многошаговый онбординг-визард, туры, модалки подтверждения | Прямой запрет в правилах UX. Онбординг — один экран, предзаполненный, одна кнопка. Запрет на **визард**, не на ввод: сам экран intake обязателен (§1.1) |
 | Настройки, админка, боковое меню | Не двигают демо-сценарий |
 | Render Web Service, Postgres, Key Value | Free web service спит 15 мин → холодный старт минуту. Состояние живёт в Convex |
 | `@convex-dev/agent`, `workflow`, `persistent-text-streaming`, `rag` | 45–90 минут на первый рабочий стрим. Один action + `internalMutation` + `useQuery` дают почти-стриминговый UX бесплатно |
@@ -432,12 +459,21 @@ api.mock.state          ({})                        -> { slug: string; variant: 
 api.seed.ensure         ({})                                       -> { workspaceId: Id<"workspaces"> }
 api.scan.run            ({ competitorId })                         -> { runId: Id<"runs"> }
 api.onboarding.analyze  ({ companyUrl, competitorUrls: string[] }) -> { runId: Id<"runs">, workspaceId }
+api.workspace.setupWatchlist ({ companyUrl, competitorUrls: string[] })
+                                                                   -> { workspaceId, runId, competitorIds: Id<"competitors">[] }
 api.verify.again        ({ signalId })                             -> { runId: Id<"runs"> }
 api.act.generate        ({ signalId, recommendationId })           -> { artifactId: Id<"artifacts"> }
 api.chat.ask            ({ workspaceId, text })                    -> { messageId: Id<"chatMessages"> }
 api.uiEvents.send       ({ workspaceId, blockId, action, payload }) -> { messageId: Id<"chatMessages"> | null }
 api.mock.flip           ({ variant: "v1" | "v2" })                 -> null
 ```
+
+`api.workspace.setupWatchlist` **добавлен** к §3.2 после `T-22` (S-1 от дорожки B): ни схема, ни одна
+существующая сигнатура не менялись. Причина: `api.onboarding.analyze` принимает `competitorUrls`, но
+скрейпит только `companyUrl` — введённые конкуренты нигде не сохраняются, строк в `competitors`
+и `sources` не появляется, и сканировать после intake нечего. `setupWatchlist` — файл дорожки B
+(`convex/workspace.ts`): создаёт конкурентов, источники и baseline-снапшоты, контекст компании
+берёт вызовом `api.onboarding.analyze` (файл дорожки A, только вызов). Идемпотентна по URL.
 
 Правила, которые контракт обязывает соблюдать (из `docs/STACK.md`):
 - `ctx.db.get("signals", id)` — **имя таблицы первым аргументом**. Старая форма работает, но не используем её нигде.
@@ -497,7 +533,7 @@ export type LoadState<T> =
 |----|---------|--------|-----------|-----------------|------|---|
 | T-01 | общая (A делает, B ждёт) | Бутстрап: Convex + Vite + React + Tailwind + shadcn, env-ключи, `.mcp.json`, чистка мусора | — | всё сгенерированное: `package.json`, `vite.config.ts`, `tailwind.config.*`, `convex/*`, `src/*`, `.gitignore`, `README.md`, `.mcp.json`; удаляет `longp.json` | 30 | [x] |
 | T-02 | общая (A делает, B ждёт) | Замороженные контракты + заглушка на каждый модуль обеих дорожек | T-01 | `convex/schema.ts` + файл-заглушка каждого модуля из §5, `src/lib/types.ts`, `src/lib/fixtures.ts`, `src/components/artifacts/ArtifactBody.tsx` | 55 | [x] |
-| T-03 | B (идёт параллельно T-01/T-02, файлов репо не трогает) | Wonder: общий файл-канвас, токены, артборды Shell / Artifact / Sources / Landing → `docs/DESIGN.md` | — | `docs/DESIGN.md` | 60 | [x] |
+| T-03 | B (идёт параллельно T-01/T-02, файлов репо не трогает) | Wonder: общий файл-канвас, токены, артборды Shell / Artifact / Setup / Landing → `docs/DESIGN.md` | — | `docs/DESIGN.md` | 60 | [x] |
 | T-38 | общая | **Разблокировка:** один общий dev-деплоймент Convex на двоих + три ключа в нём | T-01 | — (инфраструктура) | 15 | [x] |
 
 `T-38` добавлен после ревизии и сразу закрыт: у A и B были разные деплойменты и у B ни одного
@@ -537,7 +573,7 @@ export type LoadState<T> =
 | **T-30** | **A** | **Chat-панель: история, чипы-подсказки, скелетон, рендер блоков из ответа** | T-13, T-29 | `src/components/ChatPanel.tsx` | 40 | [~] |
 | **T-32** | **A** | **`DataGrid` с inline-правкой прайсинга + `FeatureMatrix`** | T-29 | `src/components/blocks/DataGrid.tsx`, `src/components/blocks/FeatureMatrix.tsx` | 45 | [~] |
 | **T-39** | **A** | **Точка входа «моя компания»: одно предзаполненное поле → `onboarding.analyze`** | T-12, T-38 | `src/components/CompanyBar.tsx` | 30 | [~] |
-| T-22 | B | Экран Sources: предзаполненный watchlist + тумблер `Simulate competitor edit` | T-05, T-10 | `src/screens/SourcesScreen.tsx`, `src/components/SourceRow.tsx`, `src/components/DemoToggle.tsx` | 35 | [~] |
+| T-22 | B | Экран Setup: intake (свой сайт + сайты конкурентов) → watchlist + тумблер `Simulate competitor edit`; `workspace.setupWatchlist` | T-05, T-10 | `src/screens/SourcesScreen.tsx`, `src/components/SourceRow.tsx`, `src/components/DemoToggle.tsx`, `convex/workspace.ts`, `src/App.tsx` (редирект), `src/components/shell/**` | 45 | [~] |
 
 **После `T-32` отрезок 0:00–1:00 сценария §1 проходится целиком** — это КТ-2, минимум, ради которого
 делается проект. Всё дальше усиливает, но не спасает.
@@ -546,6 +582,11 @@ export type LoadState<T> =
 полностью и прогнан на репетиции: `mock:flip v2` → `scan:run` даёт ровно один сигнал `Pro 49 → 39`,
 повторный скан пишет `Already reported` без дубля. Артефакты (`T-17`, `T-19`) сделаны досрочно и
 числятся в волне 3.
+
+`T-22` и `T-39` делают один и тот же шаг разными руками: `T-39` даёт одно поле «моя компания» на
+Pulse, `T-22` — экран `/setup` со своим сайтом **и сайтами конкурентов**. Второе поле обязательно:
+без него введённые конкуренты никуда не попадают (§3.2, `setupWatchlist`) и продуктовый путь §1.1
+не проходится. Задачи не конфликтуют по файлам — `CompanyBar.tsx` у A, `/setup` у B.
 
 ### Волна 2 — P1: «конкуренты в районе, подтверждение, проактивность»
 
@@ -576,6 +617,7 @@ export type LoadState<T> =
 | T-19 | B | Landing page preview из JSON-схемы + `ArtifactBody` | T-17 | `src/components/artifacts/LandingPreview.tsx`, `src/components/artifacts/ArtifactBody.tsx` | 45 | [x] |
 | T-36 | A | `GeoMap` поверх `CompetitorScope` + событие `update_radius` | T-40 | `src/components/blocks/GeoMap.tsx` | 45 | [ ] |
 | T-33 | B | Fal.ai: hero-картинка для landing page | T-21 | `convex/fal.ts` | 35 | [ ] |
+| T-41 | B | Экран результата: саммари «что изменилось / что менять» + гарантированная кнопка `Generate landing page` | T-19, T-21 | `src/screens/ArtifactScreen.tsx`, `src/components/artifacts/ArtifactBody.tsx` | 30 | [ ] |
 | T-34 | B | Hero-картинка в `LandingPreview` + регенерация и правка артефакта | T-19, T-33 | `src/components/artifacts/RegenerateBar.tsx` | 30 | [ ] |
 
 Артефакты уехали сюда из волны 1 сознательно. Минимальный процесс заканчивается сигналом,
@@ -614,7 +656,7 @@ A (динамический интерфейс):
 
 B (данные):
   T-16 ─ T-22 ─ T-04 ───────────────────────────────▶ [КТ-2]
-  scan   sources deploy
+  scan   setup  deploy
     └── живая цепочка Firecrawl → diff → detect → assess
 
 Межтрековые зависимости волны 1, обе закрываются push'ем:
@@ -746,7 +788,7 @@ A: T-36 карта ──▶        B: T-21 ─ T-17 ─ T-19 ─ T-33 ─ T-34 
               и его дизайн — зона A.
 Владеет:    docs/DESIGN-BLOCKS.md
 Читает:     docs/DESIGN.md (токены и Shell — не переопределять), PLAN.md §1, §3.3
-Не трогать: docs/DESIGN.md, артборды дорожки B на канвасе (Shell, Artifact, Landing, Sources)
+Не трогать: docs/DESIGN.md, артборды дорожки B на канвасе (Shell, Artifact, Landing, Setup)
 Скиллы/MCP: mcp__wonder__get_design_context (первым вызовом, без pageId — увидеть
             токены и артборды B), mcp__wonder__create_artboard (свои артборды: по одному
             на блок), mcp__wonder__update_elements, mcp__wonder__take_screenshot,
@@ -1262,29 +1304,66 @@ A: T-36 карта ──▶        B: T-21 ─ T-17 ─ T-19 ─ T-33 ─ T-34 
 
 ---
 
-### T-22 · Дорожка B · Экран Sources: онбординг + демо-тумблер
+### T-22 · Дорожка B · Экран Setup: intake + watchlist + демо-тумблер
 
 ```
-Зачем в демо: закрывает MVP-пункты 1–3 ТЗ и даёт управление шагом 0:10.
+Зачем в демо: первый шаг продуктового пути §1.1 — «введи свой сайт и сайты конкурентов».
+              Закрывает MVP-пункты 1–3 ТЗ и даёт ведущему управление шагом 0:10.
 Владеет:    src/screens/SourcesScreen.tsx, src/components/SourceRow.tsx,
-            src/components/DemoToggle.tsx
-Читает:     api.workspace.demo, api.onboarding.analyze, api.mock.flip, api.mock.state
-Не трогать: convex/detect.ts, convex/assess.ts, convex/recommend.ts, convex/grok.ts,
-            src/screens/PulseScreen.tsx, src/components/blocks/** (зона дорожки A)
-Скиллы/MCP: mcp__wonder__get_element_code (артборд Sources); скиллы: ui-styling, frontend-a11y
+            src/components/DemoToggle.tsx, convex/workspace.ts,
+            src/App.tsx и src/components/shell/** (маршрут /setup, нав, редирект — переданы из T-05)
+Читает:     api.workspace.demo, api.onboarding.analyze (дорожка A, только вызов),
+            api.mock.flip, api.mock.state, convex/firecrawl.ts, convex/snapshots.ts
+Не трогать: convex/onboarding.ts, convex/detect.ts, convex/assess.ts, convex/recommend.ts,
+            convex/grok.ts, src/screens/PulseScreen.tsx, src/components/blocks/** (зона дорожки A)
+Скиллы/MCP: mcp__wonder__get_element_code (артборд Setup); mcp__convex__run, mcp__convex__data;
+            скиллы: ui-styling, frontend-a11y
 ```
 
 Готово, когда:
-- [ ] два поля **предзаполнены** (URL нашей компании и URL конкурента) и одна кнопка `Analyze & set baseline` — ни одного обязательного к заполнению поля
+- [ ] **ровно два контрола** и одна кнопка `Analyze & set baseline`: инпут `Your website` и textarea `Competitor websites` (один URL в строке, 1–3 штуки). Оба **предзаполнены** демо-значениями — обязательных к заполнению полей нет
 - [ ] один экран, без шагов и визарда; результат анализа (распознанный тип бизнеса, сегменты, тарифы) показывается тут же
+- [ ] `api.workspace.setupWatchlist({companyUrl, competitorUrls})` (§3.2) создаёт строки `competitors` и `sources` **по каждому введённому URL** и снимает baseline-снапшот; контекст компании берётся вызовом `api.onboarding.analyze`. Повторный вызов с теми же URL не плодит дубли
+- [ ] введённые конкуренты **доходят до скана**: после Analyze на `/` есть что сканировать без `seed:ensure`
+- [ ] маршрут `/setup` (старый `/sources` остаётся редиректом), первый пункт нава; при `company.contextStatus === "empty"` корень `/` редиректит на `/setup`, при заполненном демо-воркспейсе — нет
 - [ ] список источников конкурента с типом, датой последнего скрейпа и HTTP-статусом
 - [ ] `DemoToggle` — честно подписанный `Simulate competitor edit (demo fixture)`, переключает v1/v2 через `api.mock.flip`, показывает текущий вариант
-- [ ] состояния: анализ идёт → пошаговый прогресс из `runs`; ошибка Firecrawl → понятный текст, а не пустой экран
+- [ ] состояния: анализ идёт → пошаговый прогресс из `runs`; ошибка Firecrawl по одному URL не роняет остальные — строка помечается ошибкой, экран живой
 - [ ] `npm run build` проходит
 
-Проверка: `npm run dev` → `/sources` → Analyze проходит; тумблер меняет вариант, `curl` мок-сайта подтверждает
-Демо-чек:  экран, с которого ведущий переключает цену конкурента перед Run Scan.
-Откат:     `git revert <коммит>` — переключать вариант придётся через `npx convex run mock:flip`.
+Проверка: `npm run dev` → `/setup` → ввести свой URL и два URL конкурентов → Analyze проходит →
+          `npx convex data competitors` показывает обе строки; тумблер меняет вариант, `curl` подтверждает
+Демо-чек:  экран, с которого ведущий переключает цену конкурента перед Run Scan; он же — вход для чужой компании.
+Откат:     `git revert <коммит>` — intake пропадает, демо-воркспейс из сида цел, вариант переключается через `npx convex run mock:flip`.
+
+---
+
+### T-41 · Дорожка B · Экран результата: саммари + гарантированный лендинг
+
+```
+Зачем в демо: выход продуктового пути §1.1. Жюри и пользователь должны получить два объекта —
+              три строки «что изменилось / что менять» и готовую страницу, — не читая дашборд.
+Владеет:    src/screens/ArtifactScreen.tsx (расширяет T-17),
+            src/components/artifacts/ArtifactBody.tsx (расширяет T-19)
+Читает:     api.artifacts.get, api.signals.get, api.act.generate, src/lib/fixtures.ts, docs/DESIGN.md
+Не трогать: convex/** (кроме вызовов), src/components/ActionPanel.tsx,
+            src/components/blocks/** (зона дорожки A)
+Скиллы/MCP: mcp__wonder__get_element_code; скиллы: ui-ux-pro-max, frontend-design
+```
+
+Готово, когда:
+- [ ] над артефактом — блок **Summary** на 2–3 строки, собранный из уже существующих полей: `assessment.why` / `positionChange` (что изменилось) + `recommendation.action` и `expectedImpact` (что менять). Ни нового поля в схеме, ни нового вызова Grok
+- [ ] Summary читается сам по себе: человек, который не открывал Pulse, понимает угрозу и ответ на неё
+- [ ] кнопка `Generate landing page` есть **всегда**, независимо от того, какая рекомендация была выбрана: экран сам находит в `signal.recommendations` элемент с `artifactType === "landing"` и зовёт `api.act.generate` с его `id`. Сигнатура §3.2 не меняется
+- [ ] если `landing`-рекомендации в списке нет — кнопка не исчезает, а берёт рекомендацию с `priority: 1`; в подписи честно сказано, из какой рекомендации собрана страница
+- [ ] существующая трассировка `Signal → Recommendation → Artifact` (T-17) остаётся и стоит под Summary, а не над ним
+- [ ] состояния: генерация идёт → скелетон секций лендинга; error → текст + Retry
+- [ ] `npm run build` проходит
+
+Проверка: `npm run dev` → сгенерировать артефакт по `rec_1` (battlecard) → на экране есть Summary и
+          рабочая кнопка `Generate landing page`, клик приводит к готовой странице
+Демо-чек:  финальный кадр демо достижим из любой рекомендации, а не только из третьей.
+Откат:     `git revert <коммит>` — экран артефакта возвращается к состоянию T-17/T-19, лендинг живёт только на `rec_3`.
 
 ---
 
@@ -1845,6 +1924,8 @@ npm run build && npm run dev   # руками пройти демо-сценар
 
 **Что показываем:** отрезок 0:00–1:00 сценария §1 целиком. Run Scan поднимает настоящую цепочку Firecrawl → diff → Grok, сигнал приезжает сам, **холст под него собирает модель**, правка своей цены в `DataGrid` уходит невидимым событием и перекладывает холст. **Это минимум, ради которого делается проект** — здесь обе половины задумки видны одновременно: и парсинг с обнаружением изменений, и живой интерфейс. Если план придётся резать — резать всё, кроме пути к КТ-2.
 
+**Продуктовый путь §1.1 входит в КТ-2 наравне с демо-путём.** Второй прогон идёт не от сида, а от `/setup`: ввести чужой сайт и URL конкурента, дойти до сигнала и саммари. Готовая landing page в КТ-2 не проверяется — артефакты стоят в волне 3 (`T-17`, `T-19`, `T-21`, `T-41`); до лендинга продуктовый путь замыкается на КТ-3. Если прогон от `/setup` не проходит — КТ-2 не пройдена, даже если демо со сцены отработало идеально.
+
 **Репетиция обязательна здесь:** прогнать 60 секунд три раза подряд с нуля (`mock:flip v1` → перезагрузка → flip v2 → Run Scan → правка цены). Если хоть один прогон сорвался — следующая задача не берётся, чинится прогон.
 
 ### КТ-3 — «конкуренты в районе + живые спонсорские API в кадре»
@@ -2078,3 +2159,6 @@ OAuth (Wonder, Exa, Render через плагин) проходится по о
 ## 12. Идеи вне плана
 
 <!-- одна строка на идею: кто предложил, что это, почему не сейчас. Решение — на контрольной точке. -->
+
+- B: отдавать сгенерированный лендинг настоящим HTML по `GET *.convex.site/landing/:artifactId` (`convex/http.ts`, тот же механизм, что у мок-сайта) + кнопки `Open in new tab` / `Copy HTML` на экране артефакта. Сейчас «готовая веб-страница» существует только как превью в безеле, поделиться ссылкой нельзя. Почему не сейчас: §11.5 — не берётся до КТ-2. Решение — на КТ-2.
+- B: `sitemap`-подсказка на intake — по введённому URL конкурента предложить найденные Firecrawl `map` страницы pricing/features вместо одной. Почему не сейчас: расширяет `T-22` за 45 минут. Решение — на КТ-2.

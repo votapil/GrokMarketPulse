@@ -2,7 +2,7 @@
 
 **Файл Wonder (один на команду):** [GrokMarketPulse](https://app.wonder.so/votapil/files/01a09523-7468-73ca-9838-1f163930bf0d/branches/main/pages/01a09523-7469-7d1a-93cb-ca004af7f12e) — орг. `votapil`, `fileId` `01a09523-7468-73ca-9838-1f163930bf0d`, `pageId` `01a09523-7469-7d1a-93cb-ca004af7f12e`, ветка `main`.
 
-> Прежний канвас `nikita-volker` / «Market Pulse» (`01a09579-…`) **deprecated** — не открывать второй файл. Rename в Wonder: **GrokMarketPulse**. GitHub App → `votapil/GrokMarketPulse`. Артборды B (Shell / Artifact / Sources / Landing) и блоки A (`Block/*`, `Panel/Chat`) живут на **этом** канвасе.
+> Прежний канвас `nikita-volker` / «Market Pulse» (`01a09579-…`) **deprecated** — не открывать второй файл. Rename в Wonder: **GrokMarketPulse**. GitHub App → `votapil/GrokMarketPulse`. Артборды B (Shell / Artifact / Setup / Landing) и блоки A (`Block/*`, `Panel/Chat`) живут на **этом** канвасе.
 
 Скриншоты — артборды на канвасе (зум Fit). Ниже — id корней и что на них видно.
 
@@ -14,7 +14,7 @@
 |---|---|---|
 | **Page - Shell** | `and` | Pulse `/`, кадр 0:00–0:10: три панели, шапка, **одна** кнопка Run Scan, слоты под блоки A |
 | **Page - Artifact** | `any` | `/artifact/:id`: battlecard + offer слева, landing preview в безеле |
-| **Page - Sources** | `hop` | `/sources`: предзаполненный watchlist + тумблер Simulate competitor edit |
+| **Page - Setup** | `hop` | `/setup` (бывш. `/sources`): **intake** — `Your website` + `Competitor websites`, одна кнопка `Analyze & set baseline`; ниже watchlist + тумблер Simulate competitor edit. Первый экран продуктового пути (`PLAN.md` §1.1) |
 | **Page - Landing** | `iii` | Финальный кадр демо: сгенерированная страница Helpdesk AI. Самый проработанный |
 | **State Loading Skeleton** | `kit` | Общий loading: шаги скана, не спиннер |
 | **State Empty Workspace** | `eve` | Общий empty: No signals yet → Run Scan |
@@ -143,7 +143,8 @@ Landing (артефакт для клиента) инвертирует земл
 |---|---|---|---|
 | **Shell / Pulse** | `kit`: шаги скана в центре, фид не прыгает | `eve`: «No signals yet» + Run Scan | `bud`: 402/timeout Firecrawl + Retry scan |
 | **Artifact** | скелетон безеля (те же полоски, что `kit`) | empty: «Generate an artifact from a recommendation» + ссылка на Pulse | error: «Grok did not return JSON» + Retry |
-| **Sources** | 2 skeleton-ряда списка | empty не в демо (воркспейс предзаполнен); если случится — «Add a page to watch» | error: URL не открылся, `metadata.statusCode` + Retry |
+| **Setup** — intake | форма остаётся видимой и disabled, под ней шаги из `runs` (`kit`) | предзаполнена демо-значениями, пустой её не бывает | ошибка по конкретному URL — красная подпись у строки, остальные URL продолжают обрабатываться |
+| **Setup** — watchlist | 2 skeleton-ряда списка | «No pages watched yet» + указатель наверх, на форму | error: URL не открылся, `metadata.statusCode` + Retry |
 | **Landing** (превью) | бумага в безеле без текста, CTA-плейсхолдер | не рисуем пустой лендинг — слот «preview after Generate» | та же `bud` внутри безеля: «Preview failed» |
 
 Копирайт empty/error конкретный, без «Oops» и без кодов в одиночку.
@@ -159,12 +160,38 @@ Landing (артефакт для клиента) инвертирует земл
 - Иконки: `lucide-react` (`LuScanLine`, `LuActivity`, …), не emoji.
 - `ConvexProvider` + шапка с «Helpdesk AI · Pro $45 · SMB».
 
+## Правила вёрстки для T-22 и T-38
+
+Intake и экран результата — два конца продуктового пути (`PLAN.md` §1.1). Они должны читаться в
+отрыве от дашборда: человек, попавший сразу на них, понимает, что ввести и что он получил.
+
+**Setup (`T-22`).** Нарисовано на артборде `hop`, верстать по нему. Форма одной колонкой
+`max-w-[560px]`, поля друг под другом, без карточек и рамок внутри: инпут `Your website` (`h-11`,
+иконка `LuGlobe` + значение mono 14px), «textarea» `Competitor websites` (`min-h-[96px]`, по строке
+на URL) с подписью `one URL per line · up to 3` в одну строку с лейблом. Поля — колодцы
+`--palette-recessed` с кромкой `--color-border`; лейблы mono 11px uppercase `tracking-[0.08em]`.
+Единственная saturated CTA — `Analyze & set baseline` (`h-12`, 18px bold, белый текст на accent,
+`LuArrowRight`), справа от неё одна строка muted 13px про стоимость прогона. Двух красных кнопок на
+экране не бывает, поэтому `Run Scan` в шапке на `/setup` — muted-колодец, не accent. Watchlist ниже,
+отделён строкой `Watching now · N pages` mono 11px uppercase с линейкой `h-[1px]`
+`--color-border`: это результат формы, а не второй ввод.
+
+Узлы артборда: `hop.los` Intake Form · `hop.kyu` Your Website Field · `hop.bid` Competitor Websites
+Field · `hop.thu` Intake Cta Row · `hop.fcc` Analyze Baseline Cta · `hop.fee` Watchlist Section
+Header · `hop.mac` Setup Run Scan Muted. Код забирать через `get_element_code`.
+
+**Artifact (`T-38`).** Summary — первое, что видно, до трассировки и до безеля: `text-[20px]`
+`weight/medium`, 2–3 строки, ширина `max-w-[72ch]`. Что изменилось — приборным белым, что менять —
+той же строкой, но `--color-accent` только на LED-точке слева, не на тексте (§ Severity).
+Трассировка `Signal → Recommendation → Artifact` — mono 12px muted, **под** Summary.
+`Generate landing page` — вторая кнопка того же accent, стоит рядом с Copy и не прячется в меню.
+
 ---
 
 ## Аудит артбордов
 
 - Pass: Page - Shell — три панели, ценность с первой строки, одна CTA.
 - Pass: Page - Artifact — battlecard читается, лендинг в безеле отделён от chrome.
-- Pass: Page - Sources — тумблер в шапке, v2 live на прайсинге.
+- Pass: Page - Setup (`hop`) — intake из двух контролов с одной CTA стоит над watchlist, `Setup` первым в наве, `Run Scan` в шапке приглушён, тумблер и `v2 live` на месте.
 - Pass: Page - Landing — headline несёт демо, таблица Us vs AcmeFlow, CTA одна фраза везде: **Lock Pro at $45**.
 - Pass: State Loading / Empty / Error — конкретный next action.
