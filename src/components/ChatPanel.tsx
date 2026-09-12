@@ -3,8 +3,8 @@ import { useAction, useQuery } from "convex/react";
 import { MessageSquare, RefreshCw, Send } from "lucide-react";
 import { api } from "../../convex/_generated/api";
 import type { Doc } from "../../convex/_generated/dataModel";
-import { blockRegistry, UnsupportedBlock } from "@/components/blocks/registry";
-import type { BlockType, UiBlock } from "@/lib/types";
+import { BlockList } from "@/components/blocks/BlockRenderer";
+import type { UiBlock } from "@/lib/types";
 import { cn } from "@/lib/utils";
 
 /**
@@ -34,13 +34,6 @@ const outlineButton = cn(
   "focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--palette-info)]",
   "disabled:cursor-not-allowed disabled:opacity-50",
 );
-
-function resolveBlockComponent(type: string) {
-  if (Object.prototype.hasOwnProperty.call(blockRegistry, type)) {
-    return blockRegistry[type as BlockType];
-  }
-  return null;
-}
 
 /** Блоки ответа рисует тот же реестр, что и холст: разметки от модели нет. */
 function MessageBlocks({ blocks }: { blocks: UiBlock[] }) {
