@@ -1,57 +1,249 @@
-import { v } from "convex/values";
-import type { Id } from "./_generated/dataModel";
-import { action, internalMutation } from "./_generated/server";
-import { internal } from "./_generated/api";
+/**
+ * T-21 Act: the last step of Monitor → Detect → Assess → Recommend → Act.
+ *
+ * `act.generate` returns an artifactId immediately with `status: "pending"` so
+ * the UI can navigate to /artifact/:id and wait there; the artifact itself is
+ * filled in by a scheduled job. Generation rules live in prompts/artifacts.ts.
+ */
 
+import { v } from "convex/values";
+import type { Doc, Id } from "./_generated/dataModel";
+import type { MutationCtx } from "./_generated/server";
+import { action, internalMutation, internalQuery } from "./_generated/server";
+import { internal } from "./_generated/api";
+import schema from "./schema";
+import type { ArtifactType } from "./prompts/artifacts";
+
+export type ArtifactBundle = {
+  workspaceId: Id<"workspaces">;
+  company: Doc<"companies"> | null;
+  competitor: Doc<"competitors">;
+  signal: Doc<"signals">;
+  evidence: Doc<"evidence">[];
+  recommendation: Doc<"signals">["recommendations"][number];
+};
+
+const vArtifactType = v.union(
+  v.literal("battlecard"),
+  v.literal("offer"),
+  v.literal("landing"),
+);
+
+/**
+ * Idempotent: one artifact per (signal, recommendation). A second Generate on
+ * the same recommendation resets the existing row instead of adding a copy —
+ * the UI navigates by artifactId, so a new id per click would strand the old
+ * page and leave orphan rows behind.
+ */
 export const createArtifactRun = internalMutation({
   args: {
     signalId: v.id("signals"),
     recommendationId: v.string(),
   },
-  returns: v.object({ artifactId: v.id("artifacts"), runId: v.id("runs") }),
+  returns: v.object({
+    artifactId: v.id("artifacts"),
+    runId: v.id("runs"),
+    type: vArtifactType,
+  }),
   handler: async (ctx, { signalId, recommendationId }) => {
     const signal = await ctx.db.get("signals", signalId);
     if (!signal) {
       throw new Error("Signal not found");
     }
 
-    const recommendation = signal.recommendations.find((rec) => rec.id === recommendationId);
-    const artifactType = recommendation?.artifactType ?? "offer";
+    const recommendation = signal.recommendations.find(
+      (rec) => rec.id === recommendationId,
+    );
+    if (!recommendation) {
+      throw new Error(
+        `Recommendation ${recommendationId} is not on signal ${signalId}`,
+      );
+    }
+    const type: ArtifactType = recommendation.artifactType;
 
-    const artifactId = await ctx.db.insert("artifacts", {
-      workspaceId: signal.workspaceId,
-      signalId,
-      recommendationId,
-      type: artifactType,
-      status: "pending",
-      payload: { type: "empty" },
+    const existing = await ctx.db
+      .query("artifacts")
+      .withIndex("by_signal", (q) => q.eq("signalId", signalId))
+      .collect();
+    const previous = existing.find(
+      (row) => row.recommendationId === recommendationId,
+    );
+
+    const blank = {
+      type,
+      status: "pending" as const,
+      payload: { type: "empty" as const },
       heroImageUrl: null,
       error: null,
+    };
+
+    let artifactId: Id<"artifacts">;
+    if (previous) {
+      await ctx.db.patch("artifacts", previous._id, blank);
+      artifactId = previous._id;
+    } else {
+      artifactId = await ctx.db.insert("artifacts", {
+        workspaceId: signal.workspaceId,
+        signalId,
+        recommendationId,
+        ...blank,
+      });
+    }
+
+    // The user committed to a countermeasure the moment they hit Generate.
+    await ctx.db.patch("signals", signalId, {
+      selectedRecommendationId: recommendationId,
+      status: "action_selected" as const,
     });
 
-    const now = Date.now();
     const runId = await ctx.db.insert("runs", {
       workspaceId: signal.workspaceId,
       competitorId: signal.competitorId,
       kind: "artifact",
       status: "running",
-      startedAt: now,
+      startedAt: Date.now(),
       finishedAt: null,
       signalId,
       steps: [
         {
           key: "artifact",
-          label: "Generate artifact",
+          label: `Generate ${type}`,
           status: "running",
-          detail: recommendationId,
+          detail: recommendation.title,
         },
       ],
       error: null,
     });
 
-    return { artifactId, runId };
+    return { artifactId, runId, type };
   },
 });
+
+export const loadBundle = internalQuery({
+  args: {
+    signalId: v.id("signals"),
+    recommendationId: v.string(),
+  },
+  returns: v.union(
+    v.null(),
+    v.object({
+      workspaceId: v.id("workspaces"),
+      company: v.union(v.null(), v.any()),
+      competitor: v.any(),
+      signal: v.any(),
+      evidence: v.array(v.any()),
+      recommendation: v.any(),
+    }),
+  ),
+  handler: async (
+    ctx,
+    { signalId, recommendationId },
+  ): Promise<ArtifactBundle | null> => {
+    const signal = await ctx.db.get("signals", signalId);
+    if (!signal) return null;
+
+    const recommendation = signal.recommendations.find(
+      (rec) => rec.id === recommendationId,
+    );
+    if (!recommendation) return null;
+
+    const competitor = await ctx.db.get("competitors", signal.competitorId);
+    if (!competitor) return null;
+
+    const company = await ctx.db
+      .query("companies")
+      .withIndex("by_workspace", (q) => q.eq("workspaceId", signal.workspaceId))
+      .first();
+
+    const evidence = await ctx.db
+      .query("evidence")
+      .withIndex("by_signal", (q) => q.eq("signalId", signalId))
+      .collect();
+
+    return {
+      workspaceId: signal.workspaceId,
+      company: company ?? null,
+      competitor,
+      signal,
+      evidence,
+      recommendation,
+    };
+  },
+});
+
+export const saveArtifact = internalMutation({
+  args: {
+    artifactId: v.id("artifacts"),
+    runId: v.id("runs"),
+    payload: schema.doc("artifacts").fields.payload,
+  },
+  returns: v.null(),
+  handler: async (ctx, { artifactId, runId, payload }) => {
+    const artifact = await ctx.db.get("artifacts", artifactId);
+    if (!artifact) {
+      throw new Error("Artifact not found");
+    }
+
+    await ctx.db.patch("artifacts", artifactId, {
+      status: "ready" as const,
+      payload,
+      error: null,
+    });
+
+    await ctx.db.patch("signals", artifact.signalId, {
+      status: "artifact_generated" as const,
+      error: null,
+    });
+
+    await finishRun(ctx, runId, "done", "Artifact ready", null);
+    return null;
+  },
+});
+
+export const markError = internalMutation({
+  args: {
+    artifactId: v.id("artifacts"),
+    runId: v.id("runs"),
+    error: v.string(),
+  },
+  returns: v.null(),
+  handler: async (ctx, { artifactId, runId, error }) => {
+    await ctx.db.patch("artifacts", artifactId, {
+      status: "error" as const,
+      payload: { type: "empty" as const },
+      error,
+    });
+
+    await finishRun(ctx, runId, "error", error, error);
+    return null;
+  },
+});
+
+/**
+ * Closes the run row. Without this every Generate leaves a permanently
+ * "running" row, and the Pulse progress strip reads `runs`.
+ */
+async function finishRun(
+  ctx: MutationCtx,
+  runId: Id<"runs">,
+  status: "done" | "error",
+  detail: string,
+  error: string | null,
+): Promise<void> {
+  const run = await ctx.db.get("runs", runId);
+  if (!run) return;
+
+  const steps = run.steps.map((step) =>
+    step.key === "artifact" ? { ...step, status, detail } : step,
+  );
+
+  await ctx.db.patch("runs", runId, {
+    status,
+    finishedAt: Date.now(),
+    steps,
+    error,
+  });
+}
 
 export const generate = action({
   args: {
@@ -60,7 +252,12 @@ export const generate = action({
   },
   returns: v.object({ artifactId: v.id("artifacts") }),
   handler: async (ctx, args): Promise<{ artifactId: Id<"artifacts"> }> => {
-    const result = await ctx.runMutation(internal.act.createArtifactRun, args);
-    return { artifactId: result.artifactId };
+    const created: {
+      artifactId: Id<"artifacts">;
+      runId: Id<"runs">;
+      type: ArtifactType;
+    } = await ctx.runMutation(internal.act.createArtifactRun, args);
+
+    return { artifactId: created.artifactId };
   },
 });
