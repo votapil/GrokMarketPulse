@@ -105,3 +105,6 @@ layout.build pricing_edit: без Grok, мгновенный FeatureMatrix.
 T-35 от B подтянут (`f9d0b73`) — discovery не на сцене, не трогаем.
 
 T-35 принято (`f9d0b73`) — discovery с niche/geo; на сцене не показываем, CompetitorScope не подключаем.
+
+T-31 принято (`b79a799`) — daily budget stop + 30m cron; caps Firecrawl 80 / Exa $3 / Grok $5. Перед сценой глянуть `budget:check` — если ok=false, скан не стартует.
+T-34 принято (`c6b2e36`) — hero + RegenerateBar; локальные правки headline/CTA только на устройстве.
