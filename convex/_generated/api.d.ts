@@ -15,6 +15,8 @@ import type * as chat from "../chat.js";
 import type * as costs from "../costs.js";
 import type * as detect from "../detect.js";
 import type * as diff from "../diff.js";
+import type * as discovery from "../discovery.js";
+import type * as discoveryLogic from "../discoveryLogic.js";
 import type * as exa from "../exa.js";
 import type * as fal from "../fal.js";
 import type * as firecrawl from "../firecrawl.js";
@@ -53,6 +55,8 @@ declare const fullApi: ApiFromModules<{
   costs: typeof costs;
   detect: typeof detect;
   diff: typeof diff;
+  discovery: typeof discovery;
+  discoveryLogic: typeof discoveryLogic;
   exa: typeof exa;
   fal: typeof fal;
   firecrawl: typeof firecrawl;
