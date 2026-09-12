@@ -11,6 +11,31 @@ import type { Id } from "./_generated/dataModel";
 import { internalQuery, query } from "./_generated/server";
 import { vAssessment, vCompanyContext, vLevel, vSignalStatus } from "./schema";
 
+/** Снапшотов на источник в ленте: демо-сайт флипают десятки раз за день. */
+const HISTORY_LIMIT = 200;
+
+/** Первая сумма в долларах из строки состояния сигнала: "Pro $39/mo" → 39. */
+export function parsePrice(state: string): number | null {
+  const match = state.match(/\$\s?(\d+(?:[.,]\d+)?)/);
+  if (!match) return null;
+  const value = Number(match[1].replace(",", "."));
+  return Number.isFinite(value) ? value : null;
+}
+
+/** Подпись снимка по направлению относительно предыдущего: cut / raised / unchanged. */
+export function describeSnapshot(
+  isBaseline: boolean,
+  previousPrice: number | null,
+  price: number | null,
+): string {
+  const shown = price === null ? "?" : String(price);
+  if (isBaseline) return `Baseline Pro $${shown}`;
+  if (price === null || previousPrice === null) return `Pro observed at $${shown}`;
+  if (price < previousPrice) return `Pro cut to $${shown}`;
+  if (price > previousPrice) return `Pro raised to $${shown}`;
+  return `Pro unchanged at $${shown}`;
+}
+
 export const timeline = query({
   args: { competitorId: v.id("competitors") },
   returns: v.array(
@@ -43,19 +68,19 @@ export const timeline = query({
       const snapshots = await ctx.db
         .query("snapshots")
         .withIndex("by_source_and_time", (q) => q.eq("sourceId", source._id))
-        .collect();
+        .take(HISTORY_LIMIT);
 
+      let previousPrice: number | null = null;
       for (const snapshot of snapshots) {
         const proPlan = snapshot.plans.find((plan) => plan.name === "Pro");
         const price = proPlan?.usd ?? null;
         entries.push({
           at: snapshot.fetchedAt,
-          label: snapshot.isBaseline
-            ? `Baseline Pro $${price ?? "?"}`
-            : `Pro cut to $${price ?? "?"}`,
+          label: describeSnapshot(snapshot.isBaseline, previousPrice, price),
           price,
           signalId: null,
         });
+        previousPrice = price ?? previousPrice;
       }
     }
 
@@ -75,7 +100,7 @@ export const timeline = query({
           signalId: signal._id,
         };
       } else {
-        const proPrice = signal.currentState.includes("$39") ? 39 : null;
+        const proPrice = parsePrice(signal.currentState);
         result.push({
           at: signal.detectedAt,
           label: signal.title,
