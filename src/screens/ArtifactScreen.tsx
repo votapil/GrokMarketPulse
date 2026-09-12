@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import { useAction, useQuery } from "convex/react";
 import { api } from "../../convex/_generated/api";
@@ -6,7 +6,12 @@ import type { Id } from "../../convex/_generated/dataModel";
 import { ArtifactBody, type ArtifactPayload } from "@/components/artifacts/ArtifactBody";
 import { battlecardMarkdown } from "@/components/artifacts/Battlecard";
 import { landingMarkdown } from "@/components/artifacts/LandingPreview";
+import {
+  withLocalLandingEdits,
+  type LocalLandingEdits,
+} from "@/components/artifacts/landingPreviewLogic";
 import { offerMarkdown } from "@/components/artifacts/OfferCard";
+import { RegenerateBar } from "@/components/artifacts/RegenerateBar";
 import { isFixtureId } from "@/components/blocks/registry";
 import { EmptyState } from "@/components/state/EmptyState";
 import { ErrorState } from "@/components/state/ErrorState";
@@ -101,6 +106,11 @@ export function ArtifactScreen() {
   const [copyLabel, setCopyLabel] = useState("Copy");
   const [generating, setGenerating] = useState(false);
   const [generateError, setGenerateError] = useState<string | null>(null);
+  const [localEdits, setLocalEdits] = useState<LocalLandingEdits>({});
+
+  useEffect(() => {
+    setLocalEdits({});
+  }, [artifactId]);
 
   const fixture = artifactId ? FIXTURES[artifactId as keyof typeof FIXTURES] : undefined;
   const isFixture = Boolean(artifactId && isFixtureId(artifactId));
@@ -163,13 +173,45 @@ export function ArtifactScreen() {
     Boolean(view.landingRec) &&
     !generating &&
     !(artifact?.status === "pending" && artifact.type === "landing");
+  const canRegenerate =
+    Boolean(view.viewedRec) &&
+    !generating &&
+    artifact?.status === "ready";
+  const displayPayload =
+    artifact?.payload.type === "landing"
+      ? withLocalLandingEdits(artifact.payload, localEdits)
+      : artifact?.payload;
 
   async function onCopy() {
-    if (!artifact || artifact.status !== "ready") return;
-    const markdown = artifactMarkdown(artifact.payload);
+    if (!artifact || artifact.status !== "ready" || !displayPayload) return;
+    const markdown = artifactMarkdown(displayPayload);
     await navigator.clipboard.writeText(markdown);
     setCopyLabel("Copied");
     window.setTimeout(() => setCopyLabel("Copy"), 1500);
+  }
+
+  async function onRegenerate() {
+    if (!view.viewedRec) return;
+    if (isFixture) {
+      setLocalEdits({});
+      return;
+    }
+    if (!live) return;
+    setGenerateError(null);
+    setGenerating(true);
+    try {
+      const { artifactId: createdId } = await generate({
+        signalId: live.signalId,
+        recommendationId: view.viewedRec.id,
+      });
+      void navigate(`/artifact/${createdId}`);
+    } catch (error) {
+      setGenerateError(
+        error instanceof Error ? error.message : "Artifact regeneration failed",
+      );
+    } finally {
+      setGenerating(false);
+    }
   }
 
   async function onGenerateLanding() {
@@ -310,8 +352,22 @@ export function ArtifactScreen() {
         />
       ) : null}
 
+      {artifact?.status === "ready" || isPending ? (
+        <RegenerateBar
+          onRegenerate={() => void onRegenerate()}
+          disabled={!canRegenerate && !generating}
+          busy={generating}
+        />
+      ) : null}
+
       {isPending || artifact?.status === "ready" ? (
-        <ArtifactBody artifact={artifact} pending={isPending} />
+        <ArtifactBody
+          artifact={artifact}
+          pending={isPending}
+          editable={!isPending && artifact?.payload.type === "landing"}
+          localEdits={localEdits}
+          onLocalEdits={setLocalEdits}
+        />
       ) : null}
     </div>
   );

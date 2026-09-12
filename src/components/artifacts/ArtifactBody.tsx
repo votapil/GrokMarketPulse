@@ -1,5 +1,9 @@
 import { Battlecard, type BattlecardPayload } from "./Battlecard";
 import { LandingPreview, type LandingPayload } from "./LandingPreview";
+import {
+  withLocalLandingEdits,
+  type LocalLandingEdits,
+} from "./landingPreviewLogic";
 import { OfferCard, type OfferPayload } from "./OfferCard";
 import { EmptyState } from "@/components/state/EmptyState";
 
@@ -69,10 +73,16 @@ export function ArtifactBody({
   artifact,
   compact = false,
   pending = false,
+  editable = false,
+  localEdits,
+  onLocalEdits,
 }: {
   artifact?: ArtifactLike | null;
   compact?: boolean;
   pending?: boolean;
+  editable?: boolean;
+  localEdits?: LocalLandingEdits;
+  onLocalEdits?: (edits: LocalLandingEdits) => void;
 }) {
   if (pending || artifact?.status === "pending") {
     return <LandingSectionSkeleton compact={compact} />;
@@ -95,11 +105,17 @@ export function ArtifactBody({
     return <OfferCard payload={payload} compact={compact} />;
   }
   if (payload.type === "landing") {
+    const shown = withLocalLandingEdits(payload, localEdits ?? {});
     return (
       <LandingPreview
-        payload={payload}
+        payload={shown}
         heroImageUrl={artifact.heroImageUrl ?? null}
         compact={compact}
+        editable={editable}
+        onHeadlineChange={(headline) =>
+          onLocalEdits?.({ ...localEdits, headline })
+        }
+        onCtaChange={(cta) => onLocalEdits?.({ ...localEdits, cta })}
       />
     );
   }

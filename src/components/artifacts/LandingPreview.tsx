@@ -1,15 +1,6 @@
-export type LandingPayload = {
-  type: "landing";
-  headline: string;
-  subheadline: string;
-  offer: string;
-  benefits: { title: string; body: string }[];
-  differentiation: string;
-  comparison: { feature: string; us: string; them: string }[];
-  socialProofPlaceholders: string[];
-  cta: string;
-  sections: { title: string; body: string }[];
-};
+import { heroImageAlt, type LandingPayload } from "./landingPreviewLogic";
+
+export type { LandingPayload };
 
 export function landingMarkdown(payload: LandingPayload): string {
   return [
@@ -35,12 +26,19 @@ export function LandingPreview({
   payload,
   heroImageUrl,
   compact = false,
+  editable = false,
+  onHeadlineChange,
+  onCtaChange,
 }: {
   payload: LandingPayload;
   heroImageUrl: string | null;
   compact?: boolean;
+  editable?: boolean;
+  onHeadlineChange?: (headline: string) => void;
+  onCtaChange?: (cta: string) => void;
 }) {
   const pad = compact ? "p-[var(--space-4)]" : "p-[var(--space-8)]";
+  const canEdit = editable && !compact;
 
   return (
     <article
@@ -49,7 +47,7 @@ export function LandingPreview({
       {heroImageUrl ? (
         <img
           src={heroImageUrl}
-          alt=""
+          alt={heroImageAlt(payload.headline)}
           className={
             compact
               ? "mb-[var(--space-4)] h-24 w-full rounded-[var(--radius-md)] object-cover"
@@ -70,9 +68,20 @@ export function LandingPreview({
       <p className="font-[family-name:var(--font-mono)] text-[13px] uppercase tracking-wide opacity-70">
         Helpdesk AI
       </p>
-      <h2 className="mt-[var(--space-2)] text-[28px] font-[number:var(--weight-black)] leading-tight md:text-[36px]">
-        {payload.headline}
-      </h2>
+      {canEdit ? (
+        <label className="mt-[var(--space-2)] block">
+          <span className="sr-only">Headline (local edit)</span>
+          <input
+            value={payload.headline}
+            onChange={(event) => onHeadlineChange?.(event.target.value)}
+            className="w-full bg-transparent text-[28px] font-[number:var(--weight-black)] leading-tight text-[var(--palette-ink)] outline-none ring-1 ring-transparent focus-visible:ring-[var(--palette-accent)] md:text-[36px]"
+          />
+        </label>
+      ) : (
+        <h2 className="mt-[var(--space-2)] text-[28px] font-[number:var(--weight-black)] leading-tight md:text-[36px]">
+          {payload.headline}
+        </h2>
+      )}
       <p className="mt-[var(--space-3)] max-w-2xl text-[16px] opacity-80">
         {payload.subheadline}
       </p>
@@ -142,9 +151,20 @@ export function LandingPreview({
           ))
         : null}
 
-      <p className="mt-[var(--space-6)] inline-flex rounded-[var(--radius-md)] bg-[var(--palette-accent)] px-[var(--space-6)] py-[var(--space-3)] text-[18px] font-[number:var(--weight-bold)] text-white">
-        {payload.cta}
-      </p>
+      {canEdit ? (
+        <label className="mt-[var(--space-6)] inline-flex">
+          <span className="sr-only">Call to action (local edit)</span>
+          <input
+            value={payload.cta}
+            onChange={(event) => onCtaChange?.(event.target.value)}
+            className="rounded-[var(--radius-md)] bg-[var(--palette-accent)] px-[var(--space-6)] py-[var(--space-3)] text-[18px] font-[number:var(--weight-bold)] text-white outline-none ring-1 ring-transparent focus-visible:ring-[var(--palette-ink)]"
+          />
+        </label>
+      ) : (
+        <p className="mt-[var(--space-6)] inline-flex rounded-[var(--radius-md)] bg-[var(--palette-accent)] px-[var(--space-6)] py-[var(--space-3)] text-[18px] font-[number:var(--weight-bold)] text-white">
+          {payload.cta}
+        </p>
+      )}
     </article>
   );
 }

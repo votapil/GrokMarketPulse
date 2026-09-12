@@ -25,6 +25,7 @@
 | T-41 | готово | `4865bfc` | Summary + Generate landing page |
 | T-22b | готово | `70f8456` | setupWatchlist + /setup; demo AcmeFlow не затирается; `/`→`/setup` только без slug demo |
 | T-33 | готово | `daf31a5` | fal.hero после ready; ошибка → null |
+| T-34 | готово | — | hero alt + Regenerate (та же rec) + локальные headline/CTA; Convex не пишет правки |
 | T-35 | готово | `f9d0b73` | `discovery.suggest` + `list`; 3–5 Exa-кандидатов; sameProduct/region/distanceKm в summary JSON; кап Exa $2 до T-31 |
 | T-31 | готово | — | суточный стоп 80 Firecrawl / $3 Exa / $5 Grok; cron 30 мин → scanAll (seed/manual); mock не трогает |
 
