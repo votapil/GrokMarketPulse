@@ -396,6 +396,14 @@ export const save = internalMutation({
   },
 });
 
+/** Кадр 0:45 без Grok: холст обязан показать петлю сразу, не ждать модель. */
+const PRICING_EDIT_LAYOUT = [
+  "DiffView",
+  "MetricCards",
+  "DataGrid",
+  "FeatureMatrix",
+] as const;
+
 export const build = internalAction({
   args: { signalId: v.id("signals"), emphasis: v.optional(vLayoutEmphasis) },
   returns: v.null(),
@@ -414,6 +422,19 @@ export const build = internalAction({
       competitorId: context.competitorId,
       artifactId: context.artifactId,
     };
+
+    // Правка своей цены на сцене: детерминированный холст, без вызова Grok.
+    // Иначе таймаут/ошибка модели писала [] и FeatureMatrix пропадал на 4+ минуты.
+    if (emphasis === "pricing_edit") {
+      const types = pinPricingEditBlocks(
+        pinDemoLoopBlocks([...PRICING_EDIT_LAYOUT], context.historyPoints),
+      );
+      await ctx.runMutation(internal.layout.save, {
+        signalId,
+        blocks: composeLayout(types, refs),
+      });
+      return null;
+    }
 
     try {
       const result = await callGrok({
@@ -439,27 +460,23 @@ export const build = internalAction({
 
       const parsed = parseJsonWithRetry(result.text, isLayoutDraft);
       if (!parsed.ok) {
-        // Деградация, а не падение: пустой layout → фронт рисует дефолтный набор.
+        // Деградация: не затираем layout — фронт держит текущий / дефолт.
         console.error(`layout.build: ${parsed.error} for signal ${signalId}`);
-        await ctx.runMutation(internal.layout.save, { signalId, blocks: [] });
         return null;
       }
 
       // Кадр 0:45 требует DataGrid на холсте. Модель часто ставит Chart
       // без истории цены — слот пустой, править Pro негде.
-      const loopTypes = pinDemoLoopBlocks(
+      const types = pinDemoLoopBlocks(
         parsed.value.blocks.map((row) => row.type),
         context.historyPoints,
       );
-      const types =
-        emphasis === "pricing_edit" ? pinPricingEditBlocks(loopTypes) : loopTypes;
       const blocks = composeLayout(types, refs);
       await ctx.runMutation(internal.layout.save, { signalId, blocks });
       return null;
     } catch (error) {
       const message = error instanceof Error ? error.message : "layout build failed";
       console.error(`layout.build failed for signal ${signalId}: ${message}`);
-      await ctx.runMutation(internal.layout.save, { signalId, blocks: [] });
       return null;
     }
   },
