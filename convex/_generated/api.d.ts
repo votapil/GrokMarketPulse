@@ -16,6 +16,7 @@ import type * as costs from "../costs.js";
 import type * as detect from "../detect.js";
 import type * as diff from "../diff.js";
 import type * as exa from "../exa.js";
+import type * as fal from "../fal.js";
 import type * as firecrawl from "../firecrawl.js";
 import type * as grok from "../grok.js";
 import type * as history from "../history.js";
@@ -53,6 +54,7 @@ declare const fullApi: ApiFromModules<{
   detect: typeof detect;
   diff: typeof diff;
   exa: typeof exa;
+  fal: typeof fal;
   firecrawl: typeof firecrawl;
   grok: typeof grok;
   history: typeof history;

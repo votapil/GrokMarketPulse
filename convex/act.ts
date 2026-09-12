@@ -201,6 +201,8 @@ export const saveArtifact = internalMutation({
       error: null,
     });
 
+    await ctx.scheduler.runAfter(0, internal.fal.hero, { artifactId });
+
     await ctx.db.patch("signals", artifact.signalId, {
       status: "artifact_generated" as const,
       error: null,
