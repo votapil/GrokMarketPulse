@@ -45,12 +45,7 @@ const BLOCK_TYPE_SET: ReadonlySet<string> = new Set(BLOCK_TYPES);
 
 /** Блокам этого списка нужен ещё и конкурент: история, сравнение, источники. */
 const COMPETITOR_SCOPED: ReadonlySet<BlockType> = new Set<BlockType>([
-  "Timeline",
-  "Chart",
-  "FeatureMatrix",
-  "DataGrid",
-  "SourceList",
-  "GeoMap",
+  "Timeline", "Chart", "FeatureMatrix", "DataGrid", "SourceList", "GeoMap",
 ]);
 
 const MAX_SIGNAL_BLOCKS = 6;

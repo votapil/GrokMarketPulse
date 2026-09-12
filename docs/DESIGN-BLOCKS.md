@@ -131,7 +131,7 @@ Shell: feed `w-[280px]`, action panel `w-[320px]`, gap `space/2`–`space/4` (8�
 - Направление читается **без цвета**: стрелка `→` + знак `−` / `+`.
 - Под diff-ценой — построчный fragment diff (added `--palette/ok`, removed `--palette/accent`), не весь markdown.
 
-Пример ready (совпадает с канвасом `mun`): `Pro $49/mo` → `Pro $39/mo` · `−20%`.
+Пример ready (совпадает с канвасом, Block Diff View): `Pro $49/mo` → `Pro $39/mo` · `−20%`.
 
 ---
 
