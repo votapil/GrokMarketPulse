@@ -19,7 +19,7 @@
 | T-21 | готово | `ab17c90` / `421d127` | `act.generate` → pending + artifactId сразу; scheduler → ready; grok-4.6; 3 схемы; 1 retry → error; costs.log в `e42e31d` |
 | T-22a | готово | `3a427cd` | `DemoToggle` на текущем `/sources` → `api.mock.flip` v1/v2; подпись честная |
 | T-42 | готово | `49a514d` | `api.snapshots.latest({ competitorId, sourceId? })`, проекция без markdown |
-| T-23 | контракт | — | `verify.again({signalId})` → `{ runId }`, status verifying, scheduler |
+| T-23 | контракт | `23cd98e` | `verify.again({signalId})` → `{ runId }`, status verifying, scheduler |
 | T-25 | в работе | — | `usage.summary` без `.collect()` / `Date.now()` |
 | T-26 | в работе | — | `UsageBadge` готов, A монтирует |
 | T-41 | в работе | — | Summary + Generate landing на ArtifactScreen |
