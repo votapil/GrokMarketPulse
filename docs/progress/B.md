@@ -13,8 +13,8 @@
 | T-08 | готово | `a2f6219` | Firecrawl scrape → snapshots, hash-дедуп, 402/timeout/empty |
 | T-10 | готово | push | seed.ensure: slug demo, URL из CONVEX_SITE_URL, live baseline / fixture Slack |
 | T-04 | готово | push | static site blueprint; CONVEX_DEPLOY_KEY sync:false; URL после Render |
-| T-17 | в работе | — | ArtifactScreen + Battlecard + OfferCard |
-| T-19 | в работе | — | LandingPreview + ArtifactBody |
+| T-17 | готово | push | ArtifactScreen: battlecard/offer, trail, Copy, pending/error/empty |
+| T-19 | готово | push | ArtifactBody единая точка рендера; landing из JSON, Us vs AcmeFlow |
 
 ## Приёмка
 

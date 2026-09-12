@@ -3,12 +3,10 @@ import { Link, useParams } from "react-router-dom";
 import { useQuery } from "convex/react";
 import { api } from "../../convex/_generated/api";
 import type { Id } from "../../convex/_generated/dataModel";
-import {
-  Battlecard,
-  battlecardMarkdown,
-  type BattlecardPayload,
-} from "@/components/artifacts/Battlecard";
-import { OfferCard, offerMarkdown, type OfferPayload } from "@/components/artifacts/OfferCard";
+import { ArtifactBody, type ArtifactPayload } from "@/components/artifacts/ArtifactBody";
+import { battlecardMarkdown } from "@/components/artifacts/Battlecard";
+import { landingMarkdown } from "@/components/artifacts/LandingPreview";
+import { offerMarkdown } from "@/components/artifacts/OfferCard";
 import { isFixtureId } from "@/components/blocks/registry";
 import { EmptyState } from "@/components/state/EmptyState";
 import { ErrorState } from "@/components/state/ErrorState";
@@ -27,9 +25,10 @@ const FIXTURES = {
   [fixtureArtifactOffer.id]: fixtureArtifactOffer,
 } as const;
 
-function artifactMarkdown(payload: { type: string }): string {
-  if (payload.type === "battlecard") return battlecardMarkdown(payload as BattlecardPayload);
-  if (payload.type === "offer") return offerMarkdown(payload as OfferPayload);
+function artifactMarkdown(payload: ArtifactPayload): string {
+  if (payload.type === "battlecard") return battlecardMarkdown(payload);
+  if (payload.type === "offer") return offerMarkdown(payload);
+  if (payload.type === "landing") return landingMarkdown(payload);
   return "";
 }
 
@@ -155,15 +154,7 @@ export function ArtifactScreen() {
         </button>
       </div>
 
-      {artifact.payload.type === "battlecard" ? (
-        <Battlecard payload={artifact.payload} />
-      ) : artifact.payload.type === "offer" ? (
-        <OfferCard payload={artifact.payload} />
-      ) : (
-        <p className="text-[15px] text-[var(--color-text-muted)]">
-          Landing preview is rendered by ArtifactBody.
-        </p>
-      )}
+      <ArtifactBody artifact={artifact} />
     </div>
   );
 }
