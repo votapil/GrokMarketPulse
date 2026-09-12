@@ -10,6 +10,11 @@ import { Skeleton } from "@/components/state/Skeleton";
 import { CompanyBar } from "@/components/CompanyBar";
 import { RunScanButton } from "@/components/RunScanButton";
 import { ScanProgress } from "@/components/ScanProgress";
+import { UsageBadge } from "@/components/UsageBadge";
+import {
+  SELECT_SIGNAL_EVENT,
+  type SelectSignalDetail,
+} from "@/components/blocks/Timeline";
 
 /**
  * T-15: Pulse composition. Callers: App `/` / shell PulsePage.
@@ -69,6 +74,19 @@ export function PulseScreen() {
     handledDoneRunIdRef.current = latestRun._id;
     setSelectedSignalId(latestRun.signalId);
   }, [latestRun]);
+
+  // T-28: клик по записи Timeline на холсте выбирает сигнал — блок не знает
+  // о состоянии экрана, поэтому шлёт DOM-событие.
+  useEffect(() => {
+    const onSelect = (event: Event) => {
+      const detail = (event as CustomEvent<SelectSignalDetail>).detail;
+      if (detail?.signalId) {
+        setSelectedSignalId(detail.signalId as Id<"signals">);
+      }
+    };
+    window.addEventListener(SELECT_SIGNAL_EVENT, onSelect);
+    return () => window.removeEventListener(SELECT_SIGNAL_EVENT, onSelect);
+  }, []);
 
   const startScan = useCallback(() => {
     if (competitorId == null || isScanning) {
@@ -152,6 +170,11 @@ export function PulseScreen() {
         </section>
 
         <ActionPanel signalId={selectedSignalId} />
+      </div>
+
+      {/* T-26 (файл B): живой расход спонсорских API — одна тихая строка внизу. */}
+      <div className="shrink-0 border-t border-[var(--color-border)] px-[var(--space-4)]">
+        <UsageBadge workspaceId={workspaceId} />
       </div>
     </div>
   );

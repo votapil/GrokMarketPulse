@@ -11,6 +11,10 @@ import { DataGrid, type BlockEvent } from "./DataGrid";
 import { DiffView } from "./DiffView";
 import { EvidenceCard } from "./EvidenceCard";
 import { FeatureMatrix } from "./FeatureMatrix";
+import { SourceListBlock } from "./SourceList";
+import { TimelineBlock } from "./Timeline";
+import { PriceChartBlock } from "./PriceChart";
+import { CompetitorScopeBlock } from "./CompetitorScope";
 
 export type BlockComponentProps = {
   block: UiBlock;
@@ -265,20 +269,13 @@ function RecommendationCardsStub(props: BlockComponentProps) {
   return <PlaceholderBlock {...props} label="Recommendations" />;
 }
 
-function SourceListStub(props: BlockComponentProps) {
-  return <PlaceholderBlock {...props} label="Sources" />;
-}
-
-function TimelineStub(props: BlockComponentProps) {
-  return <PlaceholderBlock {...props} label="Timeline" />;
-}
-
-function ChartStub(props: BlockComponentProps) {
-  return <PlaceholderBlock {...props} label="Chart" />;
-}
-
 function FeatureMatrixBlock({ block }: BlockComponentProps) {
-  return <FeatureMatrix signalId={signalIdFromBlock(block)} />;
+  return (
+    <FeatureMatrix
+      signalId={signalIdFromBlock(block)}
+      competitorId={block.props.competitorId}
+    />
+  );
 }
 
 /**
@@ -316,10 +313,6 @@ function DataGridBlock({ block }: BlockComponentProps) {
   );
 }
 
-function GeoMapStub(props: BlockComponentProps) {
-  return <PlaceholderBlock {...props} label="Geo map" />;
-}
-
 export type BlockComponent = ComponentType<BlockComponentProps>;
 
 export const blockRegistry: Record<BlockType, BlockComponent> = {
@@ -328,13 +321,14 @@ export const blockRegistry: Record<BlockType, BlockComponent> = {
   EvidenceCard: EvidenceCardBlock,
   MetricCards,
   RecommendationCards: RecommendationCardsStub,
-  SourceList: SourceListStub,
-  Timeline: TimelineStub,
-  Chart: ChartStub,
+  SourceList: SourceListBlock,
+  Timeline: TimelineBlock,
+  Chart: PriceChartBlock,
   FeatureMatrix: FeatureMatrixBlock,
   ActionPreview,
   DataGrid: DataGridBlock,
-  GeoMap: GeoMapStub,
+  // T-40: слот GeoMap несёт список конкурентов в радиусе; карта поверх него — T-36.
+  GeoMap: CompetitorScopeBlock,
 };
 
 export { BlockShell };

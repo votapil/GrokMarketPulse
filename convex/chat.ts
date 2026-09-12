@@ -180,6 +180,11 @@ Block rules:
 - Never pick a block whose data is missing: no recommendations -> no RecommendationCards,
   no artifact -> no ActionPreview, no price history -> no Timeline and no Chart.
 - If a signal is in focus, pick at least one of DiffView or MetricCards.
+- GeoMap is the competitor-scope block (nearby and similar competitors, radius and
+  same-products filter): pick it when the user asks who else competes, nearby or
+  similar competitors, or changes the radius; not for a plain price question.
+- SourceList is the external-confirmation block: pick it when the user asks whether
+  the change is confirmed elsewhere or after a verify run.
 - An empty blocks array is allowed only when the context has no signal at all.`;
 
 export const CHAT_JSON_SCHEMA = {
