@@ -144,7 +144,9 @@ async function scrapeMarkdown(url: string, apiKey: string): Promise<ScrapeOutcom
         url,
         formats: ["markdown"],
         onlyMainContent: true,
-        maxAge: 86_400_000,
+        // Must be 0: the demo flips the competitor page seconds before a scan,
+        // and any Firecrawl-side cache would serve the pre-flip price.
+        maxAge: 0,
         timeout: SCRAPE_TIMEOUT_MS,
       }),
       signal: controller.signal,
