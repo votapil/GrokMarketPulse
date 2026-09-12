@@ -9,10 +9,21 @@
 import { v } from "convex/values";
 import type { Doc, Id } from "./_generated/dataModel";
 import type { MutationCtx } from "./_generated/server";
-import { action, internalMutation, internalQuery } from "./_generated/server";
+import {
+  action,
+  internalAction,
+  internalMutation,
+  internalQuery,
+} from "./_generated/server";
 import { internal } from "./_generated/api";
 import schema from "./schema";
+import { callGrok, GROK_ARTIFACT_MODEL, ticksToUsd } from "./grok";
 import type { ArtifactType } from "./prompts/artifacts";
+import {
+  buildArtifactInput,
+  rulesFor,
+  toPayload,
+} from "./prompts/artifacts";
 
 export type ArtifactBundle = {
   workspaceId: Id<"workspaces">;
@@ -245,6 +256,102 @@ async function finishRun(
   });
 }
 
+/**
+ * Runs off the scheduler so `generate` can hand the UI an artifactId in one
+ * round trip. Every exit path either saves a payload or records an error —
+ * an artifact must never be left pending.
+ */
+export const run = internalAction({
+  args: {
+    artifactId: v.id("artifacts"),
+    runId: v.id("runs"),
+    signalId: v.id("signals"),
+    recommendationId: v.string(),
+    type: vArtifactType,
+  },
+  returns: v.null(),
+  handler: async (ctx, args): Promise<null> => {
+    const { artifactId, runId, signalId, recommendationId, type } = args;
+
+    const fail = async (message: string): Promise<null> => {
+      await ctx.runMutation(internal.act.markError, {
+        artifactId,
+        runId,
+        error: message,
+      });
+      return null;
+    };
+
+    try {
+      const bundle: ArtifactBundle | null = await ctx.runQuery(
+        internal.act.loadBundle,
+        { signalId, recommendationId },
+      );
+      if (!bundle) {
+        return await fail("Signal, competitor or recommendation not found");
+      }
+
+      const rules = rulesFor(type);
+      const input = buildArtifactInput(bundle);
+
+      const ask = async (op: string) => {
+        const result = await callGrok({
+          model: GROK_ARTIFACT_MODEL,
+          instructions: rules.instructions,
+          input,
+          schema: {
+            name: rules.schemaName,
+            schema: rules.schema,
+            strict: true,
+          },
+          maxOutputTokens: rules.maxOutputTokens,
+          reasoningEffort: "low",
+        });
+        await ctx.runMutation(internal.costs.log, {
+          workspaceId: bundle.workspaceId,
+          provider: "xai",
+          op,
+          costUsd: ticksToUsd(result.costUsdTicks),
+          credits: 0,
+        });
+        return result.text;
+      };
+
+      const accept = (text: string): unknown | null => {
+        let parsed: unknown;
+        try {
+          parsed = JSON.parse(text);
+        } catch {
+          return null;
+        }
+        return rules.validate(parsed) ? parsed : null;
+      };
+
+      // One retry: the schema is strict, so a rejection is usually banned
+      // fluff or a missing number rather than malformed JSON.
+      let value = accept(await ask("act.generate"));
+      if (value === null) {
+        value = accept(await ask("act.generate.retry"));
+      }
+      if (value === null) {
+        return await fail(
+          `Grok returned an invalid ${type} after one retry — missing required fields, banned phrasing, or no concrete number to argue with.`,
+        );
+      }
+
+      await ctx.runMutation(internal.act.saveArtifact, {
+        artifactId,
+        runId,
+        payload: toPayload(type, value),
+      });
+      return null;
+    } catch (err) {
+      const message = err instanceof Error ? err.message : "Artifact generation failed";
+      return await fail(message);
+    }
+  },
+});
+
 export const generate = action({
   args: {
     signalId: v.id("signals"),
@@ -257,6 +364,14 @@ export const generate = action({
       runId: Id<"runs">;
       type: ArtifactType;
     } = await ctx.runMutation(internal.act.createArtifactRun, args);
+
+    await ctx.scheduler.runAfter(0, internal.act.run, {
+      artifactId: created.artifactId,
+      runId: created.runId,
+      signalId: args.signalId,
+      recommendationId: args.recommendationId,
+      type: created.type,
+    });
 
     return { artifactId: created.artifactId };
   },
