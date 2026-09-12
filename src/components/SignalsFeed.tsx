@@ -12,6 +12,7 @@ import {
   useState,
 } from "react";
 import { SignalRow, type SignalRowData } from "./SignalRow";
+import { isFixtureId } from "./blocks/registry";
 import { api } from "../../convex/_generated/api";
 import type { Doc, Id } from "../../convex/_generated/dataModel";
 
@@ -268,6 +269,9 @@ function SignalsFeedBody({
       return;
     }
     const firstId = flatIds[0] as Id<"signals">;
+    if (isFixtureId(firstId)) {
+      return;
+    }
     if (selectedSignalId === undefined) {
       setInternalSelectedId(firstId);
     }

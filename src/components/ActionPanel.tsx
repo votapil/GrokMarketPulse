@@ -5,6 +5,7 @@ import { api } from "../../convex/_generated/api";
 import type { Id } from "../../convex/_generated/dataModel";
 import { RecommendationCards } from "@/components/blocks/RecommendationCards";
 import { ChatPanel } from "@/components/ChatPanel";
+import { isFixtureId } from "@/components/blocks/registry";
 import { resolveEvidenceUrl } from "@/components/blocks/DiffView";
 import { cn } from "@/lib/utils";
 
@@ -256,7 +257,10 @@ function PanelShell({ children }: { children: React.ReactNode }) {
 }
 
 export function ActionPanel({ signalId }: ActionPanelProps) {
-  const data = useQuery(api.signals.get, signalId ? { signalId } : "skip");
+  const data = useQuery(
+    api.signals.get,
+    signalId && !isFixtureId(signalId) ? { signalId } : "skip",
+  );
   const verifyAgain = useAction(api.verify.again);
   const [isRetrying, setIsRetrying] = useState(false);
   const [retryError, setRetryError] = useState<string | null>(null);
