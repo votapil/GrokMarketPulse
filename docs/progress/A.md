@@ -82,7 +82,7 @@ T-21 принято — Generate rec_3 вживую открыл
 `/artifact/j97841kcjt206vrj7sdtq4e1zn8e8eby`, лендинг спорит с AcmeFlow $39
 против нашего Pro $45. PLAN.md не трогал.
 
-Репетиция §1 ×3: рецепт и таблица в `docs/DEMO.md`. Прогон после pin FeatureMatrix — CLEAN (Generate landing ок).
+Репетиция §1 ×3: рецепт и таблица в `docs/DEMO.md`. После pin FeatureMatrix: 17:33 CLEAN, 17:38 CLEAN, pass3: BROKEN at chip "Why is this High?" → answer with blocks + focus · 9 steps · errors=0.
 
 T-24 готово — SourceList + Verify; empty только после finished verify (`f82d484`).
 T-28 готово — Timeline + PriceChart на `history.timeline`, подписи cut/raised (`40a3fd1`).
