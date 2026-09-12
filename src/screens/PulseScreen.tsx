@@ -42,10 +42,14 @@ export function PulseScreen() {
   const workspaceId = demo?.workspace._id;
   const competitorId = demo?.competitors[0]?._id ?? null;
 
-  const latestRun = useQuery(
+  const anyLatestRun = useQuery(
     api.runs.latest,
     workspaceId !== undefined ? { workspaceId } : "skip",
   );
+  // runs.latest отдаёт последний прогон любого вида. Прогресс, блокировка CTA и
+  // автовыбор сигнала — только по scan: artifact/verify показывают ход у себя,
+  // иначе незакрытый verify-run навсегда гасит Run Scan.
+  const latestRun = anyLatestRun?.kind === "scan" ? anyLatestRun : null;
 
   const isScanning = scanPending || latestRun?.status === "running";
   const showScanProgress =
