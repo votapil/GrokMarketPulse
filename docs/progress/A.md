@@ -108,3 +108,5 @@ T-35 принято (`f9d0b73`) — discovery с niche/geo; на сцене не
 
 T-31 принято (`b79a799`) — daily budget stop + 30m cron; caps Firecrawl 80 / Exa $3 / Grok $5. Перед сценой глянуть `budget:check` — если ok=false, скан не стартует.
 T-34 принято (`c6b2e36`) — hero + RegenerateBar; локальные правки headline/CTA только на устройстве.
+
+T-36 готово (`b59f48a`) — GeoMap: схематичная SVG-карта (наша точка, конкуренты по distanceKm, кольцо радиуса), слайдер радиуса шлёт `update_radius` через `api.uiEvents.send`; слот GeoMap в registry → GeoMapBlock. Координат в данных нет, карта нарисована по расстояниям. Без новых зависимостей.
