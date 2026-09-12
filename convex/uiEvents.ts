@@ -211,6 +211,8 @@ export const handleEvent = internalMutation({
     if (LAYOUT_REBUILD_ACTIONS.has(args.action) && focusSignalId !== null) {
       await ctx.scheduler.runAfter(0, internal.layout.build, {
         signalId: focusSignalId,
+        // Кадр 0:45: правка своей цены обязана вывести FeatureMatrix на холст.
+        ...(args.action === "edit_plan_price" ? { emphasis: "pricing_edit" as const } : {}),
       });
     }
 

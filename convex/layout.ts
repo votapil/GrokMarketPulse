@@ -170,6 +170,34 @@ export function pinDemoLoopBlocks(
   return [...next.slice(0, MAX_SIGNAL_BLOCKS - 1), "DataGrid"];
 }
 
+/** Что именно вызвало пересборку: подсказка модели и страховка кадра. */
+export const vLayoutEmphasis = v.union(v.literal("pricing_edit"));
+export type LayoutEmphasis = Infer<typeof vLayoutEmphasis>;
+
+/**
+ * Кадр 0:45 (§1): после правки своей цены холст обязан показать сравнение
+ * «мы vs они». Модель выбирает остальное; FeatureMatrix сервер ставит сам,
+ * если она его пропустила — рядом с DataGrid, в пределах потолка.
+ */
+export function pinPricingEditBlocks(types: readonly string[]): string[] {
+  if (types.includes("FeatureMatrix")) return [...types];
+  const next = [...types];
+  const gridIdx = next.indexOf("DataGrid");
+  next.splice(gridIdx >= 0 ? gridIdx + 1 : next.length, 0, "FeatureMatrix");
+  if (next.length <= MAX_SIGNAL_BLOCKS) return next;
+
+  // Выше потолка: убираем наименее важный для петли блок, но не саму петлю.
+  const droppable = ["SignalCard", "EvidenceCard", "Timeline", "Chart", "SourceList", "GeoMap"];
+  for (const type of droppable) {
+    const idx = next.indexOf(type);
+    if (idx >= 0) {
+      next.splice(idx, 1);
+      return next;
+    }
+  }
+  return next.slice(0, MAX_SIGNAL_BLOCKS);
+}
+
 export const LAYOUT_INSTRUCTIONS = `${REASONING_SYSTEM_PROMPT}
 
 Pick which UI blocks the app renders for one competitive signal.
@@ -183,7 +211,9 @@ Hard rules:
 - You choose WHICH blocks appear. You never choose their content, markup, or styling.
 - Never pick a block whose data is missing: no recommendations -> no RecommendationCards,
   no artifact -> no ActionPreview, no price history -> no Timeline and no Chart.
-- GeoMap only when the business is location-based.
+- GeoMap is the competitor-scope block: the list of nearby and similar competitors with a
+  radius and same-products filter. Pick it only when the business is location-based or
+  the signal is about a competitor that is not yet tracked; never before DiffView.
 - Follow the priority order given for this business type unless the signal clearly
   calls for a different emphasis.
 - "reason" is one short sentence for the server log; it is never shown to a user.`;
@@ -313,8 +343,19 @@ export const loadContext = internalQuery({
   },
 });
 
-function buildLayoutInput(context: LayoutContext): string {
+function buildLayoutInput(
+  context: LayoutContext,
+  emphasis: LayoutEmphasis | undefined,
+): string {
   const businessType = context.businessType.length > 0 ? context.businessType : "unknown";
+  const trigger =
+    emphasis === "pricing_edit"
+      ? [
+          "",
+          "Trigger: the user just edited OUR OWN plan price in the pricing table (DataGrid).",
+          "Keep DataGrid and add FeatureMatrix so the price gap is shown side by side with features.",
+        ]
+      : [];
   return [
     `Our business type: ${businessType} (${context.category || "unknown category"})`,
     `Priority order for this business type: ${priorityFor(businessType).join(", ")}`,
@@ -333,6 +374,7 @@ function buildLayoutInput(context: LayoutContext): string {
     `- evidence items: ${context.evidenceCount}`,
     `- price history points: ${context.historyPoints}`,
     `- generated artifact: ${context.artifactId === null ? "no" : "yes"}`,
+    ...trigger,
   ].join("\n");
 }
 
@@ -355,9 +397,9 @@ export const save = internalMutation({
 });
 
 export const build = internalAction({
-  args: { signalId: v.id("signals") },
+  args: { signalId: v.id("signals"), emphasis: v.optional(vLayoutEmphasis) },
   returns: v.null(),
-  handler: async (ctx, { signalId }): Promise<null> => {
+  handler: async (ctx, { signalId, emphasis }): Promise<null> => {
     const context: LayoutContext | null = await ctx.runQuery(
       internal.layout.loadContext,
       { signalId },
@@ -377,7 +419,7 @@ export const build = internalAction({
       const result = await callGrok({
         model: GROK_DEFAULT_MODEL,
         instructions: LAYOUT_INSTRUCTIONS,
-        input: buildLayoutInput(context),
+        input: buildLayoutInput(context, emphasis),
         schema: {
           name: "signal_layout",
           schema: LAYOUT_JSON_SCHEMA as unknown as Record<string, unknown>,
@@ -405,10 +447,12 @@ export const build = internalAction({
 
       // Кадр 0:45 требует DataGrid на холсте. Модель часто ставит Chart
       // без истории цены — слот пустой, править Pro негде.
-      const types = pinDemoLoopBlocks(
+      const loopTypes = pinDemoLoopBlocks(
         parsed.value.blocks.map((row) => row.type),
         context.historyPoints,
       );
+      const types =
+        emphasis === "pricing_edit" ? pinPricingEditBlocks(loopTypes) : loopTypes;
       const blocks = composeLayout(types, refs);
       await ctx.runMutation(internal.layout.save, { signalId, blocks });
       return null;
