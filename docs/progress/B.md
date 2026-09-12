@@ -9,8 +9,8 @@
 |--------|--------|--------|-------------|
 | T-03 | готово | `660c82f` | канвас + токены зафиксированы в `docs/DESIGN.md` |
 | T-05 | готово | контракт | `/` → TODO PulseScreen (A); `/artifact/:id` ArtifactScreen; `/sources` SourcesScreen |
-| T-06 | в работе | — | `convex/mock.ts` (state/flip) есть из T-02; нет `convex/http.ts`, `convex/mockHtml.ts` |
-| T-08 | не начато | — | `convex/firecrawl.ts`, `convex/snapshots.ts` — стабы-заглушки. Блокирует A:T-14 |
+| T-06 | готово | push | GET /mock/acmeflow/pricing + flip/state, URL из CONVEX_SITE_URL |
+| T-08 | готово | push | Firecrawl scrape → snapshots, hash-дедуп, 402/timeout/empty |
 | T-10 | частично | — | `seed.ensureDemo`/`seed.ensure` + `workspace.demo` есть из T-02; baseline-снапшот ждёт T-08 |
 | T-04 | не начато | — | `render.yaml` отсутствует |
 
