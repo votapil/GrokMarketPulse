@@ -73,3 +73,4 @@ Generate на `rec_3` (landing) → `/artifact/j97841kcjt206vrj7sdtq4e1zn8e8eby`
 - На сцене **не** жать CompanyBar Analyze до финального кадра — переписывает demo-контекст.
 - `npm run dev` / `convex dev` watch на общем деплое — запрещены; только `npx convex dev --once`.
 - FeatureMatrix после правки цены закреплён сервером (`pinPricingEditBlocks`) — модель может не выбрать его сама.
+- Чип «Why is this High?» часто отдаёт только DiffView; без `data-block-state` автопрогон не видит блок (починено).
