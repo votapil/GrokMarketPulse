@@ -81,9 +81,15 @@ function EvidenceSection({
   sourceUrl: string;
   evidenceUrls: string[];
 }) {
-  const urls = (evidenceUrls.length > 0 ? evidenceUrls : [sourceUrl])
-    .map((url) => resolveEvidenceUrl(url))
-    .filter((url) => url !== "#" && /^https?:\/\//i.test(url));
+  // Снапшоты и diff ссылаются на одну страницу — без дедупа React ругается
+  // на одинаковые key и может схлопнуть строки.
+  const urls = Array.from(
+    new Set(
+      (evidenceUrls.length > 0 ? evidenceUrls : [sourceUrl])
+        .map((url) => resolveEvidenceUrl(url))
+        .filter((url) => url !== "#" && /^https?:\/\//i.test(url)),
+    ),
+  );
 
   return (
     <section className="rounded-[var(--radius-md)] border border-[var(--color-border)] bg-[var(--palette-recessed)] p-[var(--space-3)]">
