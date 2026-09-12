@@ -1,6 +1,9 @@
 # Шпаргалка ведущего — сценарий §1
 
-Деплой: `pleasant-bandicoot-600`. Vite: `npm run dev` (после `git pull`).
+Деплой: `pleasant-bandicoot-600`. Фронт: `npx vite --port 5173` (после `git pull`).
+**`npm run dev` не запускать**: он поднимает `convex dev` в watch-режиме и заливает рабочее
+дерево на общий деплой при каждом сохранении — старые копии файлов B перетирают свежие.
+Функции деплоятся только `npx convex dev --once` после зелёного `npm run typecheck`.
 Шапка Run Scan всегда disabled — это кнопка B. Живой CTA — **второй** Run Scan под CompanyBar.
 
 ## Рецепт сброса (перед каждым прогоном)
