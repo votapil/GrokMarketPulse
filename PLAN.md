@@ -45,6 +45,66 @@ A дёргает `api.scan.run` (файл дорожки B), B дёргает `a
 - **Допущение:** тесты — только smoke (`npm run build` + ручной клик-путь). Юнит-тестов на день нет.
 - **Допущение:** `longp.json` в корне — мусор от разведки xAI, удаляется в `T-01`.
 
+## 0. Технологический стек
+
+Одна таблица — что, какой версии, где лежит. Подробности, ловушки и цены — в `docs/STACK.md`; здесь только решения.
+
+| Слой | Что | Версия / модель | Где в репо | Дорожка |
+|---|---|---|---|---|
+| Runtime | Node 22 (nvm), npm 10, Python 3 (только для скиллов) | — | — | — |
+| Фронт | React + TypeScript + Vite + Tailwind + shadcn/ui | из шаблона `npm create convex@latest -- -t react-vite-shadcn`; версии фиксирует `package-lock.json` в T-01 | `src/` | A и B по владению |
+| Роутинг | `react-router-dom` | ставится в T-01 | `src/App.tsx` | B |
+| Графики | `recharts` | ставится в T-01 | `src/components/blocks/PriceChart.tsx` | A |
+| Бэкенд, БД, realtime, cron, HTTP-эндпоинты | Convex | 1.45 (`ctx.db.get("table", id)` — новая сигнатура) | `convex/` | A и B по владению |
+| LLM | xAI Grok, `POST https://api.x.ai/v1/responses` (не chat/completions) | `grok-4.3` — detect / assess / recommend / chat / layout; `grok-4.6` — артефакты | `convex/grok.ts` | A |
+| Скрейпинг | Firecrawl v2 `/scrape`, `formats:["markdown"]`, `maxAge` | без `json`-формата (+4 кр./стр.) | `convex/firecrawl.ts` | B |
+| Поиск / подтверждение | Exa `/search` `type:"auto"` + `highlights` | через `fetch`, без `exa-js` | `convex/exa.ts` | B |
+| Медиа (P2) | Fal.ai, hero-картинка landing page | — | `convex/fal.ts` | B |
+| Дизайн | Wonder — один файл-канвас на команду, код через `get_element_code` | — | `docs/DESIGN.md` (B), `docs/DESIGN-BLOCKS.md` (A) | обе |
+| Хостинг | Render **Static Site**; build = `npx convex deploy --cmd 'npm run build'` | web service не используется (спит) | `render.yaml` | B |
+| Деплойменты Convex | dev-A, dev-B, prod | 3 из 40 бесплатных; prod пушит только Render | — | — |
+| Мок-конкурент | Convex HTTP action, `*.convex.site/mock/acmeflow/pricing`, цена из таблицы `mockSite` | URL из `process.env.CONVEX_SITE_URL` | `convex/http.ts` | B |
+| Агент-тулинг | Claude Code; скиллы, агенты и команды вендорены в репо | superpowers 6.3.0, ui-ux-pro-max 2.13.0, ECC-подмножество | `.claude/` | — |
+| MCP | Firecrawl (keyless), Exa, Convex (stdio), Wonder, Context7 — в `.mcp.json`; Render — только `--scope user` | — | `.mcp.json` | — |
+
+Чего в стеке **нет** и почему: `@convex-dev/agent` (45–90 мин на первый стрим), AI Gateway (выключен на Free), Render web service / Postgres / Key Value (спят или истекают), state-менеджеры поверх Convex (`useQuery` уже реактивен), UI-киты кроме shadcn, тестовые раннеры.
+
+### Поток данных
+
+```
+Firecrawl (известные страницы)  ─┐
+Exa (discovery, подтверждения)  ─┴─▶ Convex: snapshots, evidence ─▶ Grok: detect → assess → recommend → layout
+                                                                            │
+                                    React block registry ◀── signals.layout ┘
+                                            │
+                                    пользователь выбирает рекомендацию
+                                            │
+                                    Grok (правила генерации) ─▶ Convex: artifacts ─▶ ArtifactBody ─▶ Fal.ai hero (P2)
+```
+
+### Раскладка репозитория по владению
+
+```
+convex/
+  schema.ts                                   ← заморожен в T-02, правит только A через S-1
+  grok.ts  prompts/reasoning.ts  onboarding.ts  detect.ts  diff.ts  signals.ts
+  assess.ts  recommend.ts  layout.ts  chat.ts  uiEvents.ts  history.ts        ← A
+  firecrawl.ts  snapshots.ts  exa.ts  verify.ts  mock.ts  mockHtml.ts  http.ts
+  seed.ts  seedData.ts  workspace.ts  scan.ts  runs.ts  act.ts  prompts/artifacts.ts
+  artifacts.ts  fal.ts  usage.ts  costs.ts  crons.ts  budget.ts  discovery.ts  ← B
+src/
+  lib/types.ts  lib/fixtures.ts               ← заморожены в T-02
+  App.tsx  main.tsx  index.css  components/shell/  components/state/          ← B
+  screens/PulseScreen.tsx  components/blocks/**  components/SignalsFeed.tsx
+  components/SignalRow.tsx  components/ActionPanel.tsx  components/ChatPanel.tsx
+  components/RunScanButton.tsx  components/ScanProgress.tsx                   ← A
+  screens/ArtifactScreen.tsx  screens/SourcesScreen.tsx  components/artifacts/**
+  components/SourceRow.tsx  components/DemoToggle.tsx  components/UsageBadge.tsx ← B
+render.yaml  docs/DEPLOY.md                   ← B
+.mcp.json  package.json  .claude/             ← общие, меняются только через S-1
+docs/START.md                                 ← с чего начинать, промпты для обеих машин
+```
+
 ---
 
 ## 1. Демо-сценарий (90 секунд, по шагам)
@@ -1680,6 +1740,7 @@ npm run build && npm run dev
 | `.claude/skills/brainstorming`, `writing-plans`, `verification-before-completion`, `systematic-debugging`, `test-driven-development`, … | процесс: думать → план → проверка перед «готово» | superpowers 6.3.0 |
 | `.claude/agents/code-reviewer`, `react-reviewer`, `typescript-reviewer`, `silent-failure-hunter`, `security-reviewer`, `a11y-architect` | ревьюеры для §7 | ECC |
 | `.claude/commands/code-review`, `react-review`, `build-fix`, `react-build` | `/code-review`, `/react-review`, `/build-fix`, `/react-build` | ECC |
+| `.claude/commands/save-session`, `resume-session`, `checkpoint`, `feature-dev` + агенты `code-explorer`, `code-architect` + скилл `verification-loop` | цикл сессии §11.0 | ECC |
 
 Имена — **без префиксов** (`/code-review`, а не `/ecc:code-review`; `ui-ux-pro-max`, а не `ui-ux-pro-max:design`). Так они и записаны в карточках.
 
@@ -1731,9 +1792,31 @@ OAuth (Wonder, Exa, Render через плагин) проходится по о
 
 Фича = одна задача из §4. Других фич не существует: **сначала строка в таблице, потом код.**
 
+### 11.0 Цикл сессии через ECC
+
+Команды ниже вендорены в `.claude/commands` и работают на обеих машинах без установки плагина.
+
+```
+Старт сессии     /resume-session                 подхватить контекст прошлой сессии с этой машины
+                 git pull --rebase origin main
+Задача           карточка T-NN → код (11.1). /feature-dev — только если карточка неясна:
+                 его discovery + architecture (10–15 мин) карточка уже сделала
+Перед «готово»   скилл verification-loop → команда из строки «Проверка» → три состояния
+Фиксация         /checkpoint create T-NN         пишет .claude/checkpoints.log (в .gitignore)
+                 git commit -m "T-NN: …" && git pull --rebase origin main && git push origin main
+Чужой push       /code-review  (+ /react-review для .tsx)  — §7
+Красный build    /build-fix  или  /react-build
+Конец сессии     /save-session                   иначе следующая сессия начнёт с нуля
+```
+
+Что из ECC **не используем сегодня** и почему: `/orch-build-mvp`, `/orch-add-feature`, `/multi-execute`,
+`/prp-*`, `/epic-*`, `/gan-*`, `/santa-loop` — многоагентные пайплайны на часы; задача плана — 30–45 минут
+с готовой картой, и оркестрация стоит дороже самой задачи. `/plan` — план уже написан. Хуки ECC
+(`ECC_HOOK_PROFILE: minimal`) работают только там, где стоит полный плагин, и на протокол не влияют.
+
 ### 11.1 Как берётся фича
 
-1. `git pull --rebase origin main`.
+1. `/resume-session` (если сессия не первая), затем `git pull --rebase origin main`.
 2. Проверить, что все задачи из колонки «Зависит от» отмечены `[x]`. Если зависимость чужой дорожки ещё не пришла — работать против фикстур `src/lib/fixtures.ts`, а не ждать.
 3. Поставить в таблице §4 метку `[~]` (взял) и запушить эту строку сразу — напарник видит, что занято.
 4. Прочитать карточку задачи целиком. **Вызвать скиллы и MCP из строки `Скиллы/MCP:` до первой строки кода**, не после: дизайн — `ui-ux-pro-max:*` + `frontend-design` + Wonder MCP; данные и схема — Convex MCP; поиск и скрейп — Exa / Firecrawl MCP; графики — скилл `dataviz`; доки библиотек — Context7.
