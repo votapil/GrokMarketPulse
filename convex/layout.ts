@@ -146,6 +146,30 @@ export function composeLayout(
   );
 }
 
+/** Гарантирует кадр 0:45: своя цена правится в DataGrid, а не в пустом Chart. */
+export function pinDemoLoopBlocks(
+  types: readonly string[],
+  historyPoints: number,
+): string[] {
+  const next = types.filter((type) => {
+    if (historyPoints >= 2) return true;
+    return type !== "Chart" && type !== "Timeline";
+  });
+
+  if (next.includes("DataGrid")) {
+    return next;
+  }
+
+  const chartIdx = next.indexOf("Chart");
+  if (chartIdx >= 0) {
+    return next.map((type, index) => (index === chartIdx ? "DataGrid" : type));
+  }
+  if (next.length < MAX_SIGNAL_BLOCKS) {
+    return [...next, "DataGrid"];
+  }
+  return [...next.slice(0, MAX_SIGNAL_BLOCKS - 1), "DataGrid"];
+}
+
 export const LAYOUT_INSTRUCTIONS = `${REASONING_SYSTEM_PROMPT}
 
 Pick which UI blocks the app renders for one competitive signal.
@@ -379,10 +403,13 @@ export const build = internalAction({
         return null;
       }
 
-      const blocks = composeLayout(
+      // Кадр 0:45 требует DataGrid на холсте. Модель часто ставит Chart
+      // без истории цены — слот пустой, править Pro негде.
+      const types = pinDemoLoopBlocks(
         parsed.value.blocks.map((row) => row.type),
-        refs,
+        context.historyPoints,
       );
+      const blocks = composeLayout(types, refs);
       await ctx.runMutation(internal.layout.save, { signalId, blocks });
       return null;
     } catch (error) {
