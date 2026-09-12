@@ -1,5 +1,5 @@
-import { useQuery } from "convex/react";
-import type { ComponentType, ReactNode } from "react";
+import { useAction, useQuery } from "convex/react";
+import { useCallback, type ComponentType, type ReactNode } from "react";
 import type { Id } from "../../../convex/_generated/dataModel";
 import { api } from "../../../convex/_generated/api";
 import { fixtureSignal } from "@/lib/fixtures";
@@ -7,8 +7,10 @@ import type { BlockType, Level, LoadState, UiBlock } from "@/lib/types";
 import { SignalCard } from "./SignalCard";
 import { MetricCards } from "./MetricCards";
 import { ActionPreview } from "./ActionPreview";
+import { DataGrid, type BlockEvent } from "./DataGrid";
 import { DiffView } from "./DiffView";
 import { EvidenceCard } from "./EvidenceCard";
+import { FeatureMatrix } from "./FeatureMatrix";
 
 export type BlockComponentProps = {
   block: UiBlock;
@@ -275,12 +277,43 @@ function ChartStub(props: BlockComponentProps) {
   return <PlaceholderBlock {...props} label="Chart" />;
 }
 
-function FeatureMatrixStub(props: BlockComponentProps) {
-  return <PlaceholderBlock {...props} label="Feature matrix" />;
+function FeatureMatrixBlock({ block }: BlockComponentProps) {
+  return <FeatureMatrix signalId={signalIdFromBlock(block)} />;
 }
 
-function DataGridStub(props: BlockComponentProps) {
-  return <PlaceholderBlock {...props} label="Data grid" />;
+/**
+ * Замыкает петлю ТЗ §25: правка цены в блоке уходит в модель невидимым
+ * UI-событием `api.uiEvents.send`, и модель перекладывает холст.
+ * Без засеянного воркспейса сток событий не подключаем — DataGrid тогда
+ * честно пишет, что правка осталась локальной.
+ */
+function DataGridBlock({ block }: BlockComponentProps) {
+  const demo = useQuery(api.workspace.demo);
+  const sendUiEvent = useAction(api.uiEvents.send);
+  const workspaceId = demo?.workspace._id;
+
+  const handleEvent = useCallback(
+    async (event: BlockEvent) => {
+      if (!workspaceId) {
+        throw new Error("Demo workspace is not ready");
+      }
+      await sendUiEvent({
+        workspaceId,
+        blockId: event.blockId,
+        action: event.action,
+        payload: event.payload,
+      });
+    },
+    [sendUiEvent, workspaceId],
+  );
+
+  return (
+    <DataGrid
+      blockId={block.id}
+      onEvent={workspaceId ? handleEvent : undefined}
+      readOnly={block.props.readOnly === "true"}
+    />
+  );
 }
 
 function GeoMapStub(props: BlockComponentProps) {
@@ -298,9 +331,9 @@ export const blockRegistry: Record<BlockType, BlockComponent> = {
   SourceList: SourceListStub,
   Timeline: TimelineStub,
   Chart: ChartStub,
-  FeatureMatrix: FeatureMatrixStub,
+  FeatureMatrix: FeatureMatrixBlock,
   ActionPreview,
-  DataGrid: DataGridStub,
+  DataGrid: DataGridBlock,
   GeoMap: GeoMapStub,
 };
 

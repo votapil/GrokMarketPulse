@@ -2,28 +2,25 @@
 
 **Wonder (единственный канвас команды):** [GrokMarketPulse](https://app.wonder.so/votapil/files/01a09523-7468-73ca-9838-1f163930bf0d/branches/main/pages/01a09523-7469-7d1a-93cb-ca004af7f12e) — орг. `votapil`, `fileId` `01a09523-7468-73ca-9838-1f163930bf0d`, `pageId` `01a09523-7469-7d1a-93cb-ca004af7f12e`, ветка `main`.
 
-> Это **единственный** файл Wonder для A и B. Не открывать и не ссылаться как на primary на прежний `nikita-volker` / «Market Pulse» (`01a09579-…`) — deprecated. Токены **не переопределять** — канон в [`docs/DESIGN.md`](./DESIGN.md). На канвасе блоки с литералами hex (Wonder IR); в React — только `cssVar` из таблиц ниже.
+> Это **единственный** файл Wonder для A и B. Не открывать и не ссылаться как на primary на прежний `nikita-volker` / «Market Pulse» (`01a09579-…`) — deprecated. Токены **не переопределять** — канон в [`docs/DESIGN.md`](./DESIGN.md).
+
+> **Токены привязаны и на канвасе тоже.** Блоки дорожки A ссылаются на `var(--…)` вместо хекс-литералов и имён шрифтов, поэтому `get_element_code` отдаёт вставляемый код — его можно копировать в React как есть, без ручного перевода литералов в токены.
 
 > Дорожка B не трогает артборды `Block/*` и `Panel/Chat`. Дорожка A не редактирует `Shell` / `Artifact` / `Landing` / `Sources` / State-*.
 
 ---
 
-## Статус канваса (T-37)
+## Когда открывать Wonder
 
-| Артборд (канон) | Label на канвасе | `data-node-id` | Ready на канвасе | Скриншот MCP |
-|---|---|---|---|---|
-| `Block/SignalCard` | Block Signal Card | `top` | **да** `280×109` (AcmeFlow · Price change · High · 2m ago) | **снят** — ready, left accent 3px, LED high |
-| `Block/DiffView` | Block Diff View | `mun` | **да** `720×220` (`Pro $49/mo → Pro $39/mo`, `−20%`, line diff) | **снят** — Fact-зона, display ~48px mono |
-| `Block/EvidenceCard` | Block Evidence Card | `pts` | **да** `480×156` (Firecrawl · URL · fragment · 91%) | **снят** — recessed well `#12161a` |
-| `Block/MetricCards` | Block Metric Cards | `the` | **да** `360×160` (Threat · Score · Confidence · Price Δ) | **снят** — grid 2×2 mini-panels |
-| `Block/RecommendationCards` | Block Recommendation Cards | `oes` | **да** `320×817` (3 cards · Generate outline) | **снят** — action panel stack |
-| `Panel/Chat` | Panel Chat | `you` | **да** `320×427` (Fact / Evidence / AI analysis + composer) | **снят** — assessment stack |
+- Только для поверхностей, **которых ещё нет в коде**. Уже свёрстанные блоки заморожены — их не перерисовывают на канвасе, правки идут в `src/components/blocks/`.
+- Состояния блоков (`loading` / `empty` / `error`) на канвасе **не рисуются**: они живут в `src/components/blocks/registry.tsx`. На канвасе только **ready**.
+- Идентификаторы артбордов здесь намеренно не записаны — они протухают при каждом касании канваса. Артборд ищется по label: Block Signal Card, Block Diff View, Block Evidence Card, Block Metric Cards, Block Recommendation Cards, Panel Chat.
 
 Геометрия ready-блоков: Signal `280×109` · Diff `720×220` · Evidence `480×156` · Metric `360×160` · Rec `320×817` · Chat `320×427`.
 
-**Локальных PNG в репо нет** — Wonder MCP отдаёт кадр в чат, не файл. Для судьи/имплементации: открыть [GrokMarketPulse](https://app.wonder.so/votapil/files/01a09523-7468-73ca-9838-1f163930bf0d/branches/main/pages/01a09523-7469-7d1a-93cb-ca004af7f12e) → зум к `top` / `mun` / `pts` / `the` / `oes` / `you`, либо повторить `take_screenshot` с id из таблицы.
+**Локальных PNG в репо нет** — Wonder MCP отдаёт кадр в чат, не файл. Чтобы посмотреть: открыть [GrokMarketPulse](https://app.wonder.so/votapil/files/01a09523-7468-73ca-9838-1f163930bf0d/branches/main/pages/01a09523-7469-7d1a-93cb-ca004af7f12e) и зумить к нужному блоку по его label.
 
-На каждом блоке в продукте нужны четыре состояния: `loading` · `empty` · `error` · `ready`. На канвасе — **ready** у всех шести; state-фреймы — в коде по таблице «Общие правила состояний».
+На каждом блоке в продукте нужны четыре состояния: `loading` · `empty` · `error` · `ready` — см. таблицу «Общие правила состояний».
 
 ---
 
@@ -153,7 +150,7 @@ Shell: feed `w-[280px]`, action panel `w-[320px]`, gap `space/2`–`space/4` (8�
 
 ## Block/SignalCard · T-09
 
-**Канвас:** `top` · ready `280×109` сверен со скрином. **Ready:** competitor name (title 18px sans bold), signal type mono caption, severity LED + label, relative time mono muted, selected — left border 3px `color/accent`.
+**Ready** `280×109`, сверен со скрином: competitor name (title 18px sans bold), signal type mono caption, severity LED + label, relative time mono muted, selected — left border 3px `color/accent`.
 
 | Состояние | Содержимое |
 |---|---|
@@ -188,7 +185,7 @@ Shell: feed `w-[280px]`, action panel `w-[320px]`, gap `space/2`–`space/4` (8�
 
 ## Block/DiffView · T-11
 
-**Канвас:** `mun` · ready `720×220` сверен со скрином. **Ready:** Fact-зона. Before → After 48px+ black mono — **largest on screen**.
+**Ready** `720×220`, сверен со скрином: Fact-зона. Before → After 48px+ black mono — **largest on screen**.
 
 | Состояние | Содержимое |
 |---|---|
@@ -229,7 +226,7 @@ Shell: feed `w-[280px]`, action panel `w-[320px]`, gap `space/2`–`space/4` (8�
 
 ## Block/EvidenceCard · T-11
 
-**Канвас:** `pts` · ready `480×156` сверен со скрином. **Ready:** Evidence-зона. Recessed well, URL, provider badge, timestamp, fragment, confidence.
+**Ready** `480×156`, сверен со скрином: Evidence-зона. Recessed well, URL, provider badge, timestamp, fragment, confidence.
 
 | Состояние | Содержимое |
 |---|---|
@@ -269,7 +266,7 @@ Shell: feed `w-[280px]`, action panel `w-[320px]`, gap `space/2`–`space/4` (8�
 
 ## Block/MetricCards · T-09
 
-**Канвас:** `the` · ready `360×160`. **Ready:** grid 2×2 mini-panels on `color/surface`. Threat uses severity LED rules.
+**Ready** `360×160`: grid 2×2 mini-panels on `color/surface`. Threat uses severity LED rules.
 
 | Метрика | Пример | Стиль |
 |---|---|---|
@@ -315,7 +312,7 @@ Shell: feed `w-[280px]`, action panel `w-[320px]`, gap `space/2`–`space/4` (8�
 
 ## Block/RecommendationCards · T-13
 
-**Канвас:** `oes` · ready `320×817`. **Ready:** три карточки в action panel. Title sans bold; meta mono; **Generate** — outline (единственная saturated CTA на Shell остаётся Run Scan).
+**Ready** `320×817`: три карточки в action panel. Title sans bold; meta mono; **Generate** — outline (единственная saturated CTA на Shell остаётся Run Scan).
 
 | Состояние | Содержимое |
 |---|---|
@@ -355,7 +352,7 @@ Shell: feed `w-[280px]`, action panel `w-[320px]`, gap `space/2`–`space/4` (8�
 
 ## Panel/Chat · T-13
 
-**Канвас:** `you` · ready `320×427`. **Ready:** правая панель 320px — assessment stack (Fact / Evidence / AI analysis) + optional chat thread below.
+**Ready** `320×427`: правая панель 320px — assessment stack (Fact / Evidence / AI analysis) + optional chat thread below.
 
 | Состояние | Содержимое |
 |---|---|
@@ -425,16 +422,16 @@ Label всегда `text-[var(--color-text)]`, never severity hex as body fill.
 
 ## Связь с реализацией
 
-| Задача | Компонент | Артборд | Канвас | Источник истины |
-|---|---|---|---|---|
-| T-09 | `SignalCard` | Block/SignalCard | `top` ready `280×109` | сниппет + скрин MCP |
-| T-09 | `MetricCards` | Block/MetricCards | `the` ready `360×160` | сниппет + скрин MCP |
-| T-11 | `DiffView` | Block/DiffView | `mun` ready `720×220` | сниппет + скрин MCP |
-| T-11 | `EvidenceCard` | Block/EvidenceCard | `pts` ready `480×156` | сниппет + скрин MCP |
-| T-13 | `RecommendationCards` | Block/RecommendationCards | `oes` ready `320×817` | сниппет + скрин MCP |
-| T-13 | `ActionPanel` / Chat | Panel/Chat | `you` ready `320×427` | сниппет + скрин MCP |
+| Задача | Компонент | Артборд | Источник истины |
+|---|---|---|---|
+| T-09 | `SignalCard` | Block/SignalCard | сниппет + скрин MCP |
+| T-09 | `MetricCards` | Block/MetricCards | сниппет + скрин MCP |
+| T-11 | `DiffView` | Block/DiffView | сниппет + скрин MCP |
+| T-11 | `EvidenceCard` | Block/EvidenceCard | сниппет + скрин MCP |
+| T-13 | `RecommendationCards` | Block/RecommendationCards | сниппет + скрин MCP |
+| T-13 | `ActionPanel` / Chat | Panel/Chat | сниппет + скрин MCP |
 
-React+Tailwind сниппеты выше — ready-state эталон с `cssVar` из DESIGN.md. Wonder `get_element_code` для `top`/`mun`/`pts`/`the`/`oes`/`you` совпадает по копирайту и hex; в продукте биндить токены, не копировать литералы с канваса.
+React+Tailwind сниппеты выше — ready-state эталон с `cssVar` из DESIGN.md. Канвас даёт то же самое: `get_element_code` для блоков A возвращает `var(--…)`, а не хекс, — код вставляется в React без ручного перевода литералов в токены.
 
 ### Чеклист имплементации (T-09 / T-11 / T-13)
 

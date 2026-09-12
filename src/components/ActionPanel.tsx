@@ -4,6 +4,7 @@ import { RefreshCw } from "lucide-react";
 import { api } from "../../convex/_generated/api";
 import type { Id } from "../../convex/_generated/dataModel";
 import { RecommendationCards } from "@/components/blocks/RecommendationCards";
+import { ChatPanel } from "@/components/ChatPanel";
 import { resolveEvidenceUrl } from "@/components/blocks/DiffView";
 import { cn } from "@/lib/utils";
 
@@ -235,13 +236,21 @@ function ErrorPanel({
   );
 }
 
+/**
+ * Правая колонка целиком: ассессмент скроллится, чат прибит снизу.
+ * ChatPanel живёт здесь, а не в ветках ниже, — он нужен во всех состояниях
+ * панели (нет сигнала / скелетон / ошибка), чипы видны сразу.
+ */
 function PanelShell({ children }: { children: React.ReactNode }) {
   return (
     <aside
-      className="flex w-[320px] flex-col gap-[var(--space-4)] overflow-y-auto border-l border-[var(--color-border)] bg-[var(--color-bg)] p-[var(--space-4)]"
+      className="flex min-h-0 w-[var(--size-action)] shrink-0 flex-col border-l border-[var(--color-border)] bg-[var(--color-bg)]"
       aria-label="Action panel"
     >
-      {children}
+      <div className="flex min-h-0 flex-1 flex-col gap-[var(--space-4)] overflow-y-auto p-[var(--space-4)]">
+        {children}
+      </div>
+      <ChatPanel />
     </aside>
   );
 }

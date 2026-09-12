@@ -7,6 +7,7 @@ import { BlockRenderer } from "@/components/blocks/BlockRenderer";
 import { ActionPanel } from "@/components/ActionPanel";
 import { EmptyState } from "@/components/state/EmptyState";
 import { Skeleton } from "@/components/state/Skeleton";
+import { CompanyBar } from "@/components/CompanyBar";
 import { RunScanButton } from "@/components/RunScanButton";
 import { ScanProgress } from "@/components/ScanProgress";
 
@@ -98,6 +99,9 @@ export function PulseScreen() {
 
   return (
     <div className="flex min-h-0 flex-1 flex-col">
+      {/* T-39: «моя компания» — одна предзаполненная строка, не визард. */}
+      <CompanyBar />
+
       <div className="flex shrink-0 items-center justify-between gap-[var(--space-3)] border-b border-[var(--color-border)] bg-[var(--color-surface)] px-[var(--space-4)] py-[var(--space-2)]">
         <p className="font-[family-name:var(--font-mono)] text-[13px] text-[var(--color-text-muted)]">
           {statusHint}
